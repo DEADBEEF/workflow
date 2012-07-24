@@ -1,3 +1,0 @@
-message PingRequest {
-   required string host = 1;
-}
