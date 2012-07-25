@@ -2,6 +2,7 @@ package edu.workflow.server;
 
 
 
+import java.sql.SQLException;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
@@ -13,6 +14,7 @@ import com.googlecode.protobuf.pro.duplex.server.DuplexTcpServerBootstrap;
 
 import edu.workflow.ping.PingPong;
 import edu.workflow.ping.PingPong.Ping;
+import edu.workflow.server.database.Database;
 import edu.workflow.server.services.PingPongServiceImpl;
 
 
@@ -37,5 +39,14 @@ public class App
                 executor);
         bootstrap.getRpcServiceRegistry().registerService(new PingPongServiceImpl());
         bootstrap.bind();
+        try {
+        	Database db = new Database("localhost", "server_user", "server101", "workflow");
+        	db.addUser("michiel");
+        } catch (SQLException e) {
+        	
+        } catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 }
