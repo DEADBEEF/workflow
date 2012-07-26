@@ -3,6 +3,7 @@ package edu.workflow.server;
 
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
@@ -41,9 +42,13 @@ public class App
         bootstrap.bind();
         try {
         	Database db = new Database("localhost", "server_user", "server101", "workflow");
-        	db.addUser("michiel");
+        	Collection<String> users = db.getUsers();
+        	for (String user :users) {
+        		System.out.println(user);
+        	}
         } catch (SQLException e) {
-        	
+        	e.printStackTrace();
+        	System.out.println("It broke");
         } catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

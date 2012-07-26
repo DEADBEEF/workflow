@@ -28,17 +28,14 @@ public class Database {
 	
 	private void createUserTable() throws SQLException {
 		Statement statement = connect.createStatement();
-		if (!statement.execute("CREATE TABLE IF NOT EXISTS tbl_users(" +
-						"username VARCHAR(30) UNIQUE" +
-						"PRIMARY_KEY(username) )" )) {
-			throw new SQLException("Could not create table");
-		}
+		statement.execute("CREATE TABLE IF NOT EXISTS tbl_users(" +
+						"username VARCHAR(30), PRIMARY KEY(username) )" );
 		statement.close();
 	}
 	
 	public void addUser(String username) throws SQLException {
 		PreparedStatement statement = connect
-				.prepareStatement("INSERT INTO USERS VALUES(?)");
+				.prepareStatement("INSERT INTO tbl_users VALUES(?)");
 		statement.setString(1, username);
 		statement.executeUpdate();
 		statement.close();
