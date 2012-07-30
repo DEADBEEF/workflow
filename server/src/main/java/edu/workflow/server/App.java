@@ -16,6 +16,7 @@ import com.googlecode.protobuf.pro.duplex.server.DuplexTcpServerBootstrap;
 import edu.workflow.ping.PingPong;
 import edu.workflow.ping.PingPong.Ping;
 import edu.workflow.server.database.Database;
+import edu.workflow.server.services.JobServiceImpl;
 import edu.workflow.server.services.PingPongServiceImpl;
 
 
@@ -38,7 +39,7 @@ public class App
                         Executors.newCachedThreadPool(),
                         Executors.newCachedThreadPool()),
                 executor);
-        bootstrap.getRpcServiceRegistry().registerService(new PingPongServiceImpl());
+        bootstrap.getRpcServiceRegistry().registerService(new JobServiceImpl());
         bootstrap.bind();
         try {
         	Database db = new Database("localhost", "server_user", "server101", "workflow");
