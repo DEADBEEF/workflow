@@ -33,7 +33,7 @@ public class Server {
         } catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		PeerInfo serverInfo = new PeerInfo("serverHostname", port);
+		PeerInfo serverInfo = new PeerInfo("127.0.0.1", port);
 		RpcServerCallExecutor executor = new ThreadPoolCallExecutor(20, 20);
 		DuplexTcpServerBootstrap bootstrap = new DuplexTcpServerBootstrap(
                 serverInfo,

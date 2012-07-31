@@ -9,6 +9,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import edu.workflow.ping.PingPong.JobStatus;
+import edu.workflow.ping.PingPong.JobStatusEnum;
 import edu.workflow.ping.PingPong.JobType;
 
 public class Database {
@@ -23,6 +25,7 @@ public class Database {
 					.getConnection("jdbc:mysql://"+ host+ "/" + database,
 							user,password);
 			createUserTable();
+			createJobTable();
 		} catch (SQLException e) {
 			throw e;
 		}
@@ -31,7 +34,7 @@ public class Database {
 	private void createUserTable() throws SQLException {
 		Statement statement = connect.createStatement();
 		statement.execute("CREATE TABLE IF NOT EXISTS tbl_users(" +
-						"username VARCHAR(30), PRIMARY KEY(username) )" );
+						"username VARCHAR(30), PRIMARY KEY(username))" );
 		statement.close();
 	}
 	
@@ -39,7 +42,8 @@ public class Database {
 		Statement statement = connect.createStatement();
 		statement.execute("CREATE TABLE IF NOT EXISTS tbl_jobs(" +
 						"ID VARCHAR(30) PRIMARY KEY, type VARCHAR(30)," +
-				         "asignee VARCHAR(30) )");
+				         "asignee VARCHAR(30)," +
+						 "description TEXT, status VARCHAR(10) )");
 		statement.close();
 	}
 	
@@ -65,12 +69,27 @@ public class Database {
 		}
 	}
 	
+	public JobStatusEnum checkStatus(String jobId) throws SQLException {
+		PreparedStatement statement =  connect.prepareStatement("SELECT status FROM tbl_jobs " +
+											"WHERE ID=?;");
+		statement.setString(1, jobId);
+		ResultSet results = statement.executeQuery();
+		if (results.next()){
+			String status = results.getString("status");
+			return JobStatusEnum.valueOf(status);
+		} else {
+			return JobStatusEnum.JOBNOTFOUND;
+		}
+	}
+	
 	public void addJob(String jobId, JobType type, String asignee) throws SQLException {
 		PreparedStatement statement = connect.prepareStatement("INSERT INTO tbl_jobs " +
-				"values(?,?,?)");
+				"values(?,?,?,?,?)");
 		statement.setString(1, jobId);
 		statement.setString(2, type.name());
 		statement.setString(3, asignee);
+		statement.setString(4, "none");
+		statement.setString(5, JobStatusEnum.NOTDONE.name());
 		statement.executeUpdate();
 		statement.close();
 	}

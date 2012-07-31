@@ -30,14 +30,31 @@ enum ResponseEnum {
 	UNKNOWN_ERROR = 3;
 }
 
+enum JobStatusEnum {
+	NOTDONE = 1;
+	INPROGRESS = 2;
+	DONE = 3;
+	JOBNOTFOUND = 4;
+}
+
+message JobStatus {
+	required JobStatusEnum status = 1;
+}
+
 message Response{
 	required ResponseEnum code = 1;
+}
+
+message StringMessage{
+	required string value = 1;
 }
 
 
 service JobService {
 	rpc addJob(Job) returns (Response);
+	rpc checkJobStatus(StringMessage) returns (JobStatus);
 };
+
 
 
 service PingPongService {
