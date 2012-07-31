@@ -9,6 +9,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import edu.workflow.ping.PingPong.JobType;
+
 public class Database {
 	private Connection connect = null;
 
@@ -33,10 +35,42 @@ public class Database {
 		statement.close();
 	}
 	
+	public void createJobTable() throws SQLException {
+		Statement statement = connect.createStatement();
+		statement.execute("CREATE TABLE IF NOT EXISTS tbl_jobs(" +
+						"ID VARCHAR(30) PRIMARY KEY, type VARCHAR(30)," +
+				         "asignee VARCHAR(30) )");
+		statement.close();
+	}
+	
 	public void addUser(String username) throws SQLException {
 		PreparedStatement statement = connect
 				.prepareStatement("INSERT INTO tbl_users VALUES(?)");
 		statement.setString(1, username);
+		statement.executeUpdate();
+		statement.close();
+	}
+	
+	public boolean checkJobExists(String jobId) throws SQLException {
+		PreparedStatement statement = connect.prepareStatement("SELECT ID FROM tbl_jobs " +"" +
+				"WHERE ID=?");
+		statement.setString(1, jobId);
+		statement.execute();
+		if (statement.getResultSet().next()) {
+			statement.close();
+			return true;
+		} else {
+			statement.close();
+			return false;
+		}
+	}
+	
+	public void addJob(String jobId, JobType type, String asignee) throws SQLException {
+		PreparedStatement statement = connect.prepareStatement("INSERT INTO tbl_jobs " +
+				"values(?,?,?)");
+		statement.setString(1, jobId);
+		statement.setString(2, type.name());
+		statement.setString(3, asignee);
 		statement.executeUpdate();
 		statement.close();
 	}

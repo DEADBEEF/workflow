@@ -57,6 +57,8 @@ public class App
          Response status = jobService.addJob(controller, job);
          if (status.getCode() == ResponseEnum.NOERROR) {
         	 System.out.println("SUCCESS");
+         } else if (status.getCode() == ResponseEnum.JOB_EXISTS) {
+        	 System.out.println("SUCCESS");
          }
          channel.close();
          bootstrap.releaseExternalResources();
