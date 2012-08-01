@@ -22,6 +22,12 @@ message Job {
 	required string name = 1;
 	required string assignee = 2;
 	required JobType type = 3;
+	optional string description = 4;
+	optional JobStatusEnum status = 5;
+}
+
+message Jobs {
+	repeated Job jobs = 1;
 }
 
 enum ResponseEnum {

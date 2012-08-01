@@ -26,6 +26,7 @@ public class Server {
 		try {
 			database = new Database(databaseHost, databaseUser, 
 					databasePassword, databaseWork);
+			System.out.println(database.getJobList());
 			
 		} catch (SQLException e) {
         	e.printStackTrace();

@@ -9,14 +9,16 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import edu.workflow.ping.PingPong.Job;
 import edu.workflow.ping.PingPong.JobStatus;
 import edu.workflow.ping.PingPong.JobStatusEnum;
 import edu.workflow.ping.PingPong.JobType;
+import edu.workflow.ping.PingPong.Jobs;
 
 public class Database {
 	private Connection connect = null;
 
-	
+
 	public Database(String host, String user, String password, String database)
 			throws ClassNotFoundException, SQLException {
 		Class.forName("com.mysql.jdbc.Driver");
@@ -30,14 +32,14 @@ public class Database {
 			throw e;
 		}
 	}
-	
+
 	private void createUserTable() throws SQLException {
 		Statement statement = connect.createStatement();
 		statement.execute("CREATE TABLE IF NOT EXISTS tbl_users(" +
 						"username VARCHAR(30), PRIMARY KEY(username))" );
 		statement.close();
 	}
-	
+
 	public void createJobTable() throws SQLException {
 		Statement statement = connect.createStatement();
 		statement.execute("CREATE TABLE IF NOT EXISTS tbl_jobs(" +
@@ -46,7 +48,7 @@ public class Database {
 						 "description TEXT, status VARCHAR(10) )");
 		statement.close();
 	}
-	
+
 	public void addUser(String username) throws SQLException {
 		PreparedStatement statement = connect
 				.prepareStatement("INSERT INTO tbl_users VALUES(?)");
@@ -54,7 +56,7 @@ public class Database {
 		statement.executeUpdate();
 		statement.close();
 	}
-	
+
 	public boolean checkJobExists(String jobId) throws SQLException {
 		PreparedStatement statement = connect.prepareStatement("SELECT ID FROM tbl_jobs " +"" +
 				"WHERE ID=?");
@@ -68,7 +70,27 @@ public class Database {
 			return false;
 		}
 	}
-	
+
+    public Jobs getJobList() throws SQLException {
+        Statement statement = connect.createStatement();
+        ResultSet results = statement.executeQuery("SELECT ID, type, asignee, "+ 
+        			"description, status FROM tbl_jobs;");
+        Jobs.Builder jobsBuilder = Jobs.newBuilder();
+        while (results.next()) {
+        	String ID = results.getString("ID");
+        	String asignee = results.getString("asignee");
+        	JobType type = JobType.valueOf(results.getString("type"));
+        	String description = results.getString("description");
+        	JobStatusEnum status = JobStatusEnum.valueOf(results.getString("status"));
+        	jobsBuilder.addJobs(Job.newBuilder().setName(ID)
+        		.setAssignee(asignee)
+        		.setType(type)
+        		.setDescription(description)
+        		.setStatus(status).build());
+        }	
+        return jobsBuilder.build();
+    }
+
 	public JobStatusEnum checkStatus(String jobId) throws SQLException {
 		PreparedStatement statement =  connect.prepareStatement("SELECT status FROM tbl_jobs " +
 											"WHERE ID=?;");
@@ -81,7 +103,7 @@ public class Database {
 			return JobStatusEnum.JOBNOTFOUND;
 		}
 	}
-	
+
 	public void addJob(String jobId, JobType type, String asignee) throws SQLException {
 		PreparedStatement statement = connect.prepareStatement("INSERT INTO tbl_jobs " +
 				"values(?,?,?,?,?)");
@@ -93,7 +115,7 @@ public class Database {
 		statement.executeUpdate();
 		statement.close();
 	}
-	
+
 	public Collection<String> getUsers() throws SQLException {
 		Statement statement =  connect.createStatement();
 		ResultSet results =  statement
@@ -106,7 +128,7 @@ public class Database {
 		statement.close();
 		return users;
 	}
-	
+
 	public void close() throws SQLException {
 		connect.close();
 	}
