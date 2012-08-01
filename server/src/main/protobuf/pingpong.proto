@@ -22,6 +22,12 @@ message Job {
 	required string name = 1;
 	required string assignee = 2;
 	required JobType type = 3;
+	optional JobStatusEnum status = 4;
+	optional string description = 5;
+}
+
+message Jobs {
+	repeated Job jobs = 1;
 }
 
 enum ResponseEnum {
@@ -54,7 +60,6 @@ service JobService {
 	rpc addJob(Job) returns (Response);
 	rpc checkJobStatus(StringMessage) returns (JobStatus);
 };
-
 
 
 service PingPongService {
