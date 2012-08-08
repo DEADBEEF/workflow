@@ -3,12 +3,18 @@ from web.models import Job
 from django.contrib.auth.models import User
 
 class Command(BaseCommand):
-    args="job_file"
+    args="user assignee type"
     help="later"
 
     def handle(self, *args, **options):
-        user = User.objects.get(username="michiel")
-        j = Job(name="CLEANLOL", assignee=user,job_type="1",job_status="1",description="LOL")
-        j.save()
-        self.stdout.write("LOL\n")
+        username = args[0]
+        sitename = args[1]
+        job_type = args[2]
+        ident = ":".join((username, sitename, job_type))
+        j = Job.objects.get(name=ident)
+        status = j.get_job_status_display()
+        if status == "DONE":
+            self.stdout.write("DONE")
+        else:
+            self.stdout.write("BUSY")
 
