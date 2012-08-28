@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 
 class Site(models.Model):
     name = models.CharField(max_length=30, primary_key=True)
+    def __unicode__(self):
+        return unicode(self.name)
 
 # Create your models here.
 JOB_TYPE = ((u'1', u'CLEAN'), (u'2', u'REGISTER'))

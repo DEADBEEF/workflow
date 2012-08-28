@@ -11,7 +11,11 @@ class Command(BaseCommand):
         sitename = args[1]
         job_type = args[2]
         ident = ":".join((username, sitename, job_type))
-        j = Job.objects.get(name=ident)
+        try:
+            j = Job.objects.get(name=ident)
+        except:
+            self.stdout.write("BUSY")
+            return
         status = j.get_job_status_display()
         if status == "DONE":
             self.stdout.write("DONE")
