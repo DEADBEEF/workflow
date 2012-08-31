@@ -8,7 +8,7 @@ class Command(BaseCommand):
     help    ="later"
     def handle(self, *args, **options):
         server_user = User.objects.get(username='server')
-        tasks = Task.objects.filter(assignee=server_user, job_status=STATUS_LOOKUP["NOTDONE"])
+        tasks = Task.objects.filter(job_status=STATUS_LOOKUP["NOTDONE"])
         for t in tasks:
             can_execute = True
             for pred in t.predecessors.all():
@@ -18,6 +18,11 @@ class Command(BaseCommand):
             if can_execute:
                 print "Executing task"
                 run_task(t)
+
+        tasks = Task.objects.filter(job_status=STATUS_LOOKUP["TRANSFER_BACK"])
+        for t in tasks:
+            print "Executing task"
+            run_task(t)
 
 
 
