@@ -1,8 +1,10 @@
 from  django.contrib import admin
-from web.models import Job, Site
+from web.models import Job, Site, Task,File
 
 class JobAdmin(admin.ModelAdmin):
-   list_display = ["name",'assignee', 'site', 'job_type', 'job_status']
+   list_display = ["name", 'type']
 
 admin.site.register(Job,JobAdmin)
 admin.site.register(Site)
+admin.site.register(Task)
+admin.site.register(File)
