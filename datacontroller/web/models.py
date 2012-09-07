@@ -22,19 +22,28 @@ class Job(models.Model):
     type = models.CharField(max_length=1, choices=JOB_TYPE)
     script = models.CharField(max_length=200,blank=True)
     description = models.TextField(blank=True)
+    def __unicode__(self):
+        return unicode(self.name)
 
 class Host(models.Model):
     user = models.ForeignKey(User)
     hostname = models.CharField(max_length=100)
     root_dir = models.CharField(max_length=300)
     primary = models.BooleanField(default=True)
+    def __unicode__(self):
+        return u"{0} : {1}".format(self.user, self.hostname)
 
 class File(models.Model):
     filename = models.CharField(max_length=500)
     site = models.ForeignKey(Site)
+    def __unicode__(self):
+        return unicode(self.filename)
 
 class SiteDir(models.Model):
     root_dir = models.CharField(max_length=100)
+    def __unicode__(self):
+        return unicode(self.root_dir)
+
 
 
 class Task(models.Model):
@@ -43,8 +52,11 @@ class Task(models.Model):
     assignee = models.ForeignKey(User)
     input_files = models.ManyToManyField(File, blank=True)
     output_folder = models.CharField(max_length=255)
-    predecessors = models.ManyToManyField("self", blank=True)
-    successors = models.ManyToManyField("self", blank=True)
+    predecessors = models.ManyToManyField("self", blank=True, symmetrical=False, related_name="pred+")
+    successors = models.ManyToManyField("self", blank=True, symmetrical=False, related_name="succ+")
     job_status = models.CharField(max_length=1, choices=JOB_STATUS)
+    def __unicode__(self):
+        return u"{0}:{1} - {2}".format(self.site, self.job_type, self.assignee)
+
 
 
