@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime
 
 
 
@@ -7,13 +8,16 @@ from django.contrib.auth.models import User
 JOB_TYPE = ((u'1', u'SERVER-1-1'), (u'2', u'SERVER-M-1'), (u'3', u'USER'))
 TYPE_LOOKUP = {}
 for v,k in JOB_TYPE: TYPE_LOOKUP[k] = v
-JOB_STATUS = ((u'1', u'NOTDONE'),(u'2', u'INPROGRESS'), (u'3', u'TRANSFER_BACK') , (u'4', u'DONE'))
+JOB_STATUS = ((u'1', u'NOTDONE'), (u'2', u'TRANSFERING'), (u'3', u'INPROGRESS'),
+        (u'4', u'TRANSFER_BACK') ,(u'5', u'VALIDATE'), (u'6', u'DONE'),  (u'7', u'FAILED'))
 STATUS_LOOKUP = {}
 for v,k in JOB_STATUS: STATUS_LOOKUP[k] = v
 
 class Site(models.Model):
+    id = models.CharField(max_length=30, default="")
     name = models.CharField(max_length=30,primary_key=True)
     folder_name = models.CharField(max_length=30,default="")
+    active = models.BooleanField(default=True)
     def __unicode__(self):
         return unicode(self.name)
 
@@ -45,8 +49,20 @@ class SiteDir(models.Model):
         return unicode(self.root_dir)
 
 
+class Category(models.Model):
+    category_name = models.CharField(max_length=100, default="")
+    def __unicode__(self):
+        return self.category_name
+
 
 class Task(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, blank=True)
+    category = models.ForeignKey(Category, blank=True)
+    priority = models.IntegerField(default=5)
+    started = models.DateTimeField(blank=True)
+    ended = models.DateTimeField(blank=True)
+    log = models.TextField(default="", blank=True)
     site = models.ForeignKey(Site)
     job_type = models.ForeignKey(Job)
     assignee = models.ForeignKey(User)

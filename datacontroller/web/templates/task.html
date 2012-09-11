@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Task - {{task.name}}{% endblock %}
+
+{% block scripts %}
+{% load staticfiles %}
+<script type="text/javascript" src="{% static "task.js" %}" ></script>
+<link rel="stylesheet" type="text/css" href="{% static "task.css"%}"/>
+{% endblock %}
+
+{% block content %}
+<div id="task">
+ <div id="task_name"><h3>{{ task.name }}</h3></div>
+ <div id="site">Site: {{ task.site }}</div>
+ <div id="priority">Priority: {{ task.priority }}</div>
+ <div id="status">
+  Status: {{task.get_job_status_display}}
+  {% if progress %}
+  <form action="{% url web.views.finish_task%}" method="post" >{% csrf_token %}
+   <input type="hidden" name="task_id" value="{{ task.id }}">
+   <button id="finish" type="submit">Finish Task</button>
+  </form>
+  {% endif %}
+ </div>
+ {% if started %}<div id="duration">{{started}}</div>{% endif %}
+ <hr/>
+ <div id="description">Description: <p>{{ task.description }}</p></div>
+ <div id="file_container">
+  <form action="{% url web.views.start_transfer %}" method="post">{% csrf_token %}
+   <input type="hidden" name="task_id" value="{{ task.id }}">
+   <button name="files" value="in" type="submit">Transfer Input Files</button>
+   <button name="files" value="out" type="submit">Transfer Ouput Files</button>
+   <button name="files" value="all" type="submit">Transfer All Files</button>
+  </form>
+  Input Files:
+  <div id="files">
+   {% for file in files %}
+    <div class="file">{{file.filename}}</div>
+   {% endfor %}
+  </div>
+ </div>
+ <div id="output_contianer">
+  Ouput: <div class="folder">{{ task.output_folder }}</div>
+ </div>
+  <form action="{% url web.views.upload %}" method="post">{% csrf_token %}
+   <input type="hidden" name="task_id" value="{{ task.id }}">
+   <button name="upload" value="folder" type="submit">Upload Files</button>
+  </form>
+  <div id="log_container">
+   Log: <pre>{{ task.log }}</pre>
+  </div>
+</div>
+{% endblock %}
