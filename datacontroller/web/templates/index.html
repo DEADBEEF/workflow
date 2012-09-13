@@ -21,10 +21,10 @@
   </tr>
   {% for task in user_tasks %}
  <tr>
-   <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.name }}</a></td>
+   <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.job_type.name }}</a></td>
    <td>{{ task.site }}</td>
    <td>{{ task.priority }}</td>
-   <td>{{ task.category }}</td>
+   <td>{{ task.job_type.category }}</td>
    <td>{{ task.get_job_status_display }}</td>
   </tr>
  {% endfor %}
@@ -43,10 +43,10 @@
   </tr>
  {% for task in tasks %}
  <tr>
-   <td>{{ task.name }}</td>
+   <td>{{ task.job_type.name }}</td>
    <td>{{ task.site }}</td>
    <td>{{ task.priority }}</td>
-   <td>{{ task.category }}</td>
+   <td>{{ task.job_type.category }}</td>
    <td>{{ task.assignee }}</td>
    <td>{{ task.get_job_status_display }}</td>
   </tr>

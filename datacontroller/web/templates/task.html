@@ -10,7 +10,8 @@
 
 {% block content %}
 <div id="task">
- <div id="task_name"><h3>{{ task.name }}</h3></div>
+ <div id="task_name"><h3>{{ task.job_type.name }}</h3></div>
+
  <div id="site">Site: {{ task.site }}</div>
  <div id="priority">Priority: {{ task.priority }}</div>
  <div id="status">
@@ -24,7 +25,7 @@
  </div>
  {% if started %}<div id="duration">{{started}}</div>{% endif %}
  <hr/>
- <div id="description">Description: <p>{{ task.description }}</p></div>
+ <div id="description">Description: <p>{{ task.job_type.description }}</p></div>
  <div id="file_container">
   <form action="{% url web.views.start_transfer %}" method="post">{% csrf_token %}
    <input type="hidden" name="task_id" value="{{ task.id }}">
