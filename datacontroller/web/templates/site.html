@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Site View{% endblock %}
+
+{% block scripts %}
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static "site.css" %}" />
+<script type="text/javascript" src="{% static "site.js" %}" ></script>
+{% endblock %}
+
+{% block content %}
+Coming soon
+<form action="{% url web.views.run_task %}" method="post">{% csrf_token %}
+ <input type="hidden" name="site" value="{{ site_id }}"/>
+ <input type="hidden" name="next" value="{% url web.views.view_site site=site_id  %}"/>
+ <button id="run_tasks" type="submit">Run Tasks</button>
+</form>
+<div id="task_list">
+ <table>
+  <tr>
+   <th>Name of task</th>
+   <th>Edit</th>
+   <th>Site</th>
+   <th>Priority</th>
+   <th>Category</th>
+   <th>Assignee</th>
+   <th>Status</th>
+  </tr>
+ {% for task in tasks %}
+ <tr>
+  <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">
+   {{ task.job_type.name }}
+  </a></td>
+   <td><a href="{% url web.views.edit_task site=task.site.id task_id=task.id %}">
+   Edit
+  </a></td>
+   <td>{{ task.site }}</td>
+   <td>{{ task.priority }}</td>
+   <td>{{ task.job_type.category }}</td>
+   <td>{{ task.assignee }}</td>
+   <td>{{ task.get_job_status_display }}</td>
+  </tr>
+ {% endfor %}
+ </table>
+</div>
+<div class="add_task">
+ <button id="user_but" type="button">Add User Task</button>
+ <button id="server_but" type="button">Add Server Task</button>
+ <div id="user" class="hidden">
+  <form action="{% url web.views.add_task %}" method="post">{%csrf_token%}
+   <label for="id_job_type">Job:</label>
+   {{ user_form.job_type }}
+   <button type="submit">Create User Job</button>
+   <input type="hidden", name="site_id" value="{{site_id}}"/>
+  </form>
+  </div>
+  <div id="server" class="hidden">
+  <form action="{% url web.views.add_task %}" method="post">{%csrf_token%}
+   <label for="id_job_type">Job:</label>
+   {{ server_form.job_type }}
+   <input type="hidden", name="site_id" value="{{site_id}}"/>
+   <button type="submit">Create Server Job</button>
+  </form>
+  </div>
+</div>
+
+
+{% endblock %}

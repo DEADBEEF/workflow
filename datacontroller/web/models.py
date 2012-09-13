@@ -21,9 +21,15 @@ class Site(models.Model):
     def __unicode__(self):
         return unicode(self.name)
 
+class Category(models.Model):
+    category_name = models.CharField(max_length=100, default="")
+    def __unicode__(self):
+        return self.category_name
+
 class Job(models.Model):
     name = models.CharField(max_length=200,primary_key=True)
     type = models.CharField(max_length=1, choices=JOB_TYPE)
+    category = models.ForeignKey(Category, blank=True)
     script = models.CharField(max_length=200,blank=True)
     description = models.TextField(blank=True)
     def __unicode__(self):
@@ -49,28 +55,26 @@ class SiteDir(models.Model):
         return unicode(self.root_dir)
 
 
-class Category(models.Model):
-    category_name = models.CharField(max_length=100, default="")
-    def __unicode__(self):
-        return self.category_name
 
 
 class Task(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100, blank=True)
-    category = models.ForeignKey(Category, blank=True)
     priority = models.IntegerField(default=5)
-    started = models.DateTimeField(blank=True)
-    ended = models.DateTimeField(blank=True)
+    started = models.DateTimeField(null=True)
+    ended = models.DateTimeField(null=True)
     log = models.TextField(default="", blank=True)
     site = models.ForeignKey(Site)
     job_type = models.ForeignKey(Job)
-    assignee = models.ForeignKey(User)
+    assignee = models.ForeignKey(User, null=True)
     input_files = models.ManyToManyField(File, blank=True)
-    output_folder = models.CharField(max_length=255)
+    output_folder = models.CharField(max_length=255, default="")
     predecessors = models.ManyToManyField("self", blank=True, symmetrical=False, related_name="pred+")
     successors = models.ManyToManyField("self", blank=True, symmetrical=False, related_name="succ+")
-    job_status = models.CharField(max_length=1, choices=JOB_STATUS)
+    job_status = models.CharField(max_length=1, choices=JOB_STATUS, default=STATUS_LOOKUP["NOTDONE"])
+    class Meta:
+        permissions = (
+            ("edit_task", "Can Edit the tasks"),
+        )
     def __unicode__(self):
         return u"{0}:{1} - {2}".format(self.site, self.job_type, self.assignee)
 
