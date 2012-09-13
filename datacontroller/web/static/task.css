@@ -72,8 +72,15 @@
     margin-right: 20px;
     background-color: #FFF;
     overflow: auto;
-    padding-left: 5px;
 
+}
+
+#file_container > #files > .file {
+    padding-left: 5px;
+}
+
+#file_container > #files > .file:hover {
+    background-color: #85B6FF;
 }
 
 #log_container > pre {

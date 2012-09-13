@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit task - {{task.job_type.name}} {% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
+
+{% block content %}
+<h3>{{ task.job_type.name }}</h3>
+<p>{{ task.job_type.description }}</p>
+<form id="update_task" action="." method="post">{%csrf_token%}
+    <div id="assignee_div">
+    {% if task.job_type.type == '3' %}
+    <label for="id_assignee">Assignee:</label>
+    {{form.assignee}}
+    </div>
+    {% else %}
+    {{form.assignee}}
+    {% endif %}
+    <div id="priority_div">
+        <label for="id_priority">Priority:</label>
+        {{form.priority}}
+    </div>
+    <div id="input_files_div">
+        <label for="id_input_files">Input Files:</label>
+        {{form.input_files}}
+    </div>
+    <div id="predecessors_div">
+        <label for="id_predecessors">Predecessors:</label>
+        {{form.predecessors}}
+    </div>
+    <div id="output_folder_div">
+        <label for="id_output_folder">Ouput Folder:</label>
+        {{form.output_folder}}
+    </div>
+    <button type="submit">Save Task</button>
+</form>
+
+{% endblock %}

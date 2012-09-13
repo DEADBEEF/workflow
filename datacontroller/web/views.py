@@ -1,10 +1,13 @@
 from django.http import HttpResponseRedirect, HttpResponse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
-from web.models import Task, Site, STATUS_LOOKUP
+from django.contrib.auth.models import User
+from web.models import Task, Site, STATUS_LOOKUP, Job, TYPE_LOOKUP
 from web.run_task import transfer_back, transfer_files,  transfer_back_files
+from web.run_task import run_task as run_process_task
 from datetime import datetime
+from web.forms import TaskForm, AddUserTaskForm, AddServerTaskForm
 
 def timesince(dt, end=None, default="just now"):
     """
@@ -35,7 +38,7 @@ def timesince(dt, end=None, default="just now"):
             return u"%d %s" % (period, singular if period == 1 else plural)
     return default
 
-login_required(login_url="/login/")
+@login_required(login_url="/login/")
 def index(request):
     user = request.user
     tasks = Task.objects.filter(site__active=True) #Active sites
@@ -104,7 +107,75 @@ def upload(request):
         return redirect('web.views.task', site=task.site.id, task_id=task.id)
 
 
+@permission_required('web.edit_task', login_url="/login/")
+def edit_task(request, site, task_id):
+    task = Task.objects.get(id=task_id)
+    if request.method =="GET":
+        form = TaskForm(instance=task)
+        print dir(form)
+        return render_to_response('edit.html', {'form':form, 'task': task },
+                context_instance=RequestContext(request) )
+    elif request.method == "POST":
+        form = TaskForm(request.POST,instance=task )
+        if form.is_valid():
+            form.save()
+            tasks = Task.objects.filter(successors=task)
+            for old in tasks:
+                old.successors.remove(task)
+            tasks = task.predecessors.all()
+            for pred in tasks:
+                pred.successors.add(task)
+                pred.save()
+            return redirect('web.views.view_site', site=site)
+    return render_to_response('edit.html', {'form':form, 'task': task },
+        context_instance=RequestContext(request) )
+
+
+@permission_required('web.edit_task', login_url="/login/")
+def view_site(request, site):
+    site = Site.objects.get(id=site)
+    tasks = Task.objects.filter(site=site) #Active sites
+    user_form =AddUserTaskForm()
+    server_form =AddServerTaskForm()
+    return render_to_response('site.html', {'tasks':tasks, 'user_form': user_form,
+        'server_form':server_form, 'site_id':site.id},context_instance=RequestContext(request) )
+
+@permission_required('web.edit_task', login_url="/login/")
+def add_task(request):
+    if request.method == 'POST':
+        type = request.POST["job_type"]
+        job_type = Job.objects.get(name=type)
+        site = Site.objects.get(id=request.POST["site_id"])
+        task = Task.objects.create(job_type=job_type, site=site)
+        if job_type.type != TYPE_LOOKUP["USER"]:
+            print User.objects.get(username='server')
+
+            task.assignee = User.objects.get(username='server')
+        task.save()
+        id = task.id
+        return redirect('web.views.edit_task', site=request.POST["site_id"], task_id=task.id)
+
+@permission_required('web.edit_task', login_url="/login")
+def run_task(request):
+    if request.method == "POST":
+        tasks = Task.objects.filter(job_status=STATUS_LOOKUP["NOTDONE"])
+        if request.POST.get("site", "") != "":
+            tasks = tasks.filter(site__id=request.POST["site"])
+        for t in tasks:
+            can_execute = True
+            for pred in t.predecessors.all():
+                if pred.job_status != STATUS_LOOKUP["DONE"]:
+                    can_execute = False
+                    break
+            if can_execute:
+                print "Executing task"
+                run_process_task(t)
+
+        tasks = Task.objects.filter(job_status=STATUS_LOOKUP["TRANSFER_BACK"])
+        for t in tasks:
+            print "Executing task"
+            run_process_task(t)
+        return redirect(request.POST["next"])
 
 
 
-# Create your views here.
