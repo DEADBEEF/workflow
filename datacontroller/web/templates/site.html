@@ -9,6 +9,7 @@
 
 {% block content %}
 Coming soon
+
 <form action="{% url web.views.run_task %}" method="post">{% csrf_token %}
  <input type="hidden" name="site" value="{{ site_id }}"/>
  <input type="hidden" name="next" value="{% url web.views.view_site site=site_id  %}"/>
@@ -42,7 +43,8 @@ Coming soon
  {% endfor %}
  </table>
 </div>
-<div class="add_task">
+
+<div id="add_task">
  <button id="user_but" type="button">Add User Task</button>
  <button id="server_but" type="button">Add Server Task</button>
  <div id="user" class="hidden">
@@ -61,6 +63,102 @@ Coming soon
    <button type="submit">Create Server Job</button>
   </form>
   </div>
+</div>
+<button id="view_job" type="button">Jobs</button>
+<button id="view_category" type="button">Category</button>
+<div id="jobs" class="hidden">
+    <div id="add_job" >
+        <button id="add_user_job" type="button">Add User Job</button>
+        <button id="add_server_job" type="button">Add Server Job</button>
+        <div id="user_job_div" class="hidden">
+            <form id="user_job" action="{% url web.views.update_job %}" method="post">
+                {% csrf_token %}
+                <div id="id_name_div" />
+                <input id="id_id" type="hidden" name="id" value="0"/>
+                <label for="id_name">Name:</label>
+                {{ job_form.name }}
+                </div>
+                <input type="hidden" name="type" value="3"/>
+                <div id="id_category_div" />
+                    <label for="id_category">Category:</label>
+                    {{ job_form.category }}
+                </div>
+                <div id="id_description_div" />
+                    <label for="id_description">Description:</label>
+                    {{ job_form.description }}
+                </div>
+                <button type="submit">Update Job</button>
+            </form>
+        </div>
+        <div id="server_job_div" class="hidden">
+            <form id="user_job"  action="{% url web.views.update_job %}" method="post">
+                <div id="id_name_div" />
+                <input id="id_id" type="hidden" name="id" value="0"/>
+                <label for="id_name">Name:</label>
+                {{ job_form.name }}
+                </div>
+                <ul>
+                    <li><input type="radio" name="type" value="1" checked="yes">SERVER 1-1</input></li>
+                    <li><input type="radio" name="type" value="2">SERVER M-1</input></li>
+                </ul>
+                <div id="id_category_div" />
+                    <label for="id_category">Category:</label>
+                    {{ job_form.category }}
+                </div>
+                <div id="id_script_div" />
+                    <label for="id_script">Script:</label>
+                    {{ job_form.script }}
+                </div>
+                <div id="id_description_div" />
+                    <label for="id_description">Description:</label>
+                    {{ job_form.description }}
+                </div>
+                <button type="submit">Update Job</button>
+            </form>
+        </div>
+    </div>
+    <div id="job_view">
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Edit</th>
+            </tr>
+        {% for job in jobs %}
+            <tr>
+                <td>{{ job.name }}</td>
+                <td>{{ job.get_type_display }}</td>
+                <td>{{ job.category.category_name  }}</td>
+                <td><button type="button" onclick="populate_job({{job.id}})">Edit</button></td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+</div>
+<div id="category" class="hidden">
+    <div id="add_category" >
+        <button id="cat_but" type="button">Add Category</button>
+        <div id="cat_div" class="hidden">
+            <form id="add_category" action="{% url web.views.add_category %}" method="post">
+                {% csrf_token %}
+                {{ category_form.category_name }}
+                <button type="submit">Add</button>
+            </form>
+        </div>
+    </div>
+    <div id="job_view">
+        <table>
+            <tr>
+                <th>Name</th>
+            </tr>
+        {% for cat in categories %}
+            <tr>
+                <td>{{ cat.category_name }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
 </div>
 
 

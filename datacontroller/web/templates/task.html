@@ -10,7 +10,12 @@
 
 {% block content %}
 <div id="task">
- <div id="task_name"><h3>{{ task.job_type.name }}</h3></div>
+    <div id="task_name"><h3>{{ task.job_type.name }}</h3></div>
+    {% if edit %}
+    <div id="edit_div">
+        <a href="{% url web.views.edit_task site=site task_id=task.id %}">Edit</a>
+    </div>
+    {% endif %}
 
  <div id="site">Site: {{ task.site }}</div>
  <div id="priority">Priority: {{ task.priority }}</div>
@@ -21,18 +26,26 @@
    <input type="hidden" name="task_id" value="{{ task.id }}">
    <button id="finish" type="submit">Finish Task</button>
   </form>
+  {% elif validate_button %}
+  <form action="{% url web.views.finish_task%}" method="post" >{% csrf_token %}
+   <input type="hidden" name="validate_task" value="{{ task.id }}">
+   <button id="finish" type="submit">Validate Task</button>
+  </form>
   {% endif %}
  </div>
  {% if started %}<div id="duration">{{started}}</div>{% endif %}
  <hr/>
  <div id="description">Description: <p>{{ task.job_type.description }}</p></div>
  <div id="file_container">
+     {% if server_task %}
+     {% else %}
   <form action="{% url web.views.start_transfer %}" method="post">{% csrf_token %}
    <input type="hidden" name="task_id" value="{{ task.id }}">
    <button name="files" value="in" type="submit">Transfer Input Files</button>
    <button name="files" value="out" type="submit">Transfer Ouput Files</button>
    <button name="files" value="all" type="submit">Transfer All Files</button>
   </form>
+  {% endif %}
   Input Files:
   <div id="files">
    {% for file in files %}
@@ -43,10 +56,13 @@
  <div id="output_contianer">
   Ouput: <div class="folder">{{ task.output_folder }}</div>
  </div>
+     {% if server_task %}
+     {% else %}
   <form action="{% url web.views.upload %}" method="post">{% csrf_token %}
    <input type="hidden" name="task_id" value="{{ task.id }}">
    <button name="upload" value="folder" type="submit">Upload Files</button>
   </form>
+  {% endif %}
   <div id="log_container">
    Log: <pre>{{ task.log }}</pre>
   </div>

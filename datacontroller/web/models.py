@@ -22,14 +22,17 @@ class Site(models.Model):
         return unicode(self.name)
 
 class Category(models.Model):
+    id = models.AutoField(primary_key=True)
     category_name = models.CharField(max_length=100, default="")
     def __unicode__(self):
         return self.category_name
 
+
 class Job(models.Model):
-    name = models.CharField(max_length=200,primary_key=True)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
     type = models.CharField(max_length=1, choices=JOB_TYPE)
-    category = models.ForeignKey(Category, blank=True)
+    category = models.ForeignKey(Category, blank=True, null=True)
     script = models.CharField(max_length=200,blank=True)
     description = models.TextField(blank=True)
     def __unicode__(self):

@@ -11,4 +11,8 @@ urlpatterns = patterns('web.views',
         url(r'^site/(?P<site>\w+)/$', 'view_site'),
         url(r'^addtask/$', 'add_task'),
         url(r'^runtask/$', 'run_task'),
+        url(r'^addjob/$', 'add_job'),
+        url(r'^updatejob/$', 'update_job'),
+        url(r'^getjob/$', 'get_job'),
+        url(r'^addcategory/$', 'add_category'),
         )
