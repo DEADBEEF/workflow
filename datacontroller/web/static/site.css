@@ -1,3 +1,151 @@
 .hidden {
     display: none;
 }
+#task_list {
+    margin-left:-50px;
+    margin-right:-50px;
+    margin-top: -10px;
+    margin-bottom: -50px;
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 20px;
+    -moz-border-radius: 20px;
+    padding-left: 10px;
+    padding-bottom: 20px;
+    width:750px;
+    background-color: #EEF;
+}
+
+#task_list button{
+    background-color: #C2FFC2;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-color: #6BB247;
+    border-width:4px;
+    border-style: solid;
+    padding: 5px;
+    width: 150px
+}
+
+#task_list button:hover{
+    background-color: #66FF66;
+}
+
+#task_list table {
+    margin-top: 30px;
+    border-style: solid;
+    border-width:1px;
+    border-color: #33C;
+    border-radius:10px;
+    padding-bottom: 10px;
+    border-spacing: 0px;
+    background-color: #E8EDFF;
+    font-size: 12px;
+}
+
+#task_list th {
+    border-width: 0px;
+    background-color: #B9C9FE;
+    left: -1px;
+    padding: 8px;
+    color:#039;
+    font-weight: normal;
+    font-size: 13px;
+    margin: 0px;
+}
+#task_list th.tl {
+    border-top-left-radius :10px;
+}
+#task_list th.tr {
+    border-top-right-radius :10px;
+}
+
+#task_list tr:hover {
+    background-color: #D0DAFD;
+}
+#task_list td {
+    padding-left: 3px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 20px;
+    color: #33C;
+}
+
+#task_list hr {
+    margin-left: -10px;
+
+}
+
+#add_task {
+    margin-top: 10px;
+    margin-bottom: 20px;
+
+
+}
+
+#user button{
+    background-color: #B2FFFF;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-color: #00E6E6;
+    border-width:2px;
+    border-style: solid;
+    padding: auto;
+    width: auto;
+}
+
+#server button{
+    background-color: #B2FFFF;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-color: #00E6E6;
+    border-width:2px;
+    border-style: solid;
+    padding: auto;
+    width: auto;
+}
+
+#user {
+    margin-top: 15px;
+}
+
+#server {
+    margin-top: 15px;
+}
+
+#user button:hover{
+    background-color: #19FFFF;
+}
+
+#server button:hover{
+    background-color: #19FFFF;
+}
+
+#jobs {
+    margin-top: 10px;
+}
+
+#jobs  table  button{
+    background-color: #B2FFFF;
+    border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-color: #00E6E6;
+    border-width:2px;
+    border-style: solid;
+    padding: auto;
+    width: auto;
+}
+
+#jobs {
+    margin-top: 15px;
+}
+
+
+#category {
+    margin-top: 10px;
+}
+
+.center {
+ text-align: center;
+}
+

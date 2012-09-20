@@ -1,0 +1,102 @@
+#sites {
+    margin-top: 5px;
+    margin-left: 10px;
+    margin-bottom:20px;
+}
+
+.site {
+    border-style: solid;
+    border-width: 4px;
+    width: 100px;
+    text-align: center;
+    padding: 5px;
+    background-color: #CFC;
+}
+.exclude {
+    background-color: #FCC;
+}
+
+
+.site:hover {
+    background-color: #CCF;
+}
+
+#task_list table {
+    border-style: solid;
+    border-width:1px;
+    border-color: #33C;
+    border-radius:10px;
+    padding-bottom: 10px;
+    border-spacing: 0px;
+    background-color: #E8EDFF;
+    font-size: 12px;
+}
+
+#task_list th {
+    border-width: 0px;
+    background-color: #B9C9FE;
+    left: -1px;
+    padding: 8px;
+    color:#039;
+    font-weight: normal;
+    font-size: 13px;
+    margin: 0px;
+}
+#task_list th.tl {
+    border-top-left-radius :10px;
+}
+#task_list th.tr {
+    border-top-right-radius :10px;
+}
+
+#task_list tr:hover {
+    background-color: #D0DAFD;
+}
+#task_list td {
+    padding-left: 3px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 20px;
+    color: #33C;
+}
+
+
+#user_task_list table {
+    border-style: solid;
+    border-width:1px;
+    border-color: #33C;
+    border-radius:10px;
+    padding-bottom: 10px;
+    border-spacing: 0px;
+    background-color: #E8EDFF;
+    font-size: 12px;
+    margin-bottom: 30px;
+}
+
+#user_task_list th {
+    border-width: 0px;
+    background-color: #B9C9FE;
+    left: -1px;
+    padding: 8px;
+    color:#039;
+    font-weight: normal;
+    font-size: 13px;
+    margin: 0px;
+}
+#user_task_list th.tl {
+    border-top-left-radius :10px;
+}
+#user_task_list th.tr {
+    border-top-right-radius :10px;
+}
+
+#user_task_list tr:hover {
+    background-color: #D0DAFD;
+}
+#user_task_list td {
+    padding-left: 3px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 20px;
+    color: #33C;
+}
