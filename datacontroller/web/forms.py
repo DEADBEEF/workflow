@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from web.models import Job, Task, TYPE_LOOKUP
+from web.models import Job, Task, TYPE_LOOKUP, Category, Site
 
 class TaskForm(forms.ModelForm):
     class Meta:
@@ -38,4 +38,16 @@ class AddServerTaskForm(forms.ModelForm):
     def __init__(self, **kwargs):
         super(AddServerTaskForm, self).__init__(**kwargs)
         self.fields['job_type'].queryset = Job.objects.exclude(type=TYPE_LOOKUP['USER'])
+
+class JobForm(forms.ModelForm):
+    class Meta:
+        model = Job
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+
+class SiteForm(forms.ModelForm):
+    class Meta:
+        model = Site
 

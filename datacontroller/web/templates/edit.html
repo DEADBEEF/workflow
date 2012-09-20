@@ -3,10 +3,13 @@
 {% block title %}Edit task - {{task.job_type.name}} {% endblock %}
 
 {% block scripts %}
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static "edit.css" %}"/>
 
 {% endblock %}
 
 {% block content %}
+<div id="edit">
 <h3>{{ task.job_type.name }}</h3>
 <p>{{ task.job_type.description }}</p>
 <form id="update_task" action="." method="post">{%csrf_token%}
@@ -36,5 +39,6 @@
     </div>
     <button type="submit">Save Task</button>
 </form>
+</div>
 
 {% endblock %}

@@ -1,14 +1,29 @@
 {% load staticfiles %}
 <html>
     <head>
-    <script type="text/javascript" src="{% static "jquery-1.8.1.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "jquery-1.8.1.min.js" %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static "base.css" %}"/>
         {% block scripts %}{% endblock %}
      <title>{% block title %}{% endblock %}</title>
  </head>
  <body>
-  <h2>Zamani thing</h2>
+
+  <h2>Zamani Workflow Manager</h2>
   <hr/>
+  <div id="content">
   {% block content %}
   {% endblock %}
+  </div>
+  <div id="nav">
+      <a href="{% url web.views.index %}">My tasks</a>
+      <div id="nav_sites">
+        <a href="{% url web.views.sites %}">Sites:</a>
+        <ul>
+        {% for site in sites %}
+            <li><a href="{% url web.views.view_site site=site.id %}">{{site.name}}</a></li>
+            {% endfor %}
+        </ul>
+      </div>
+  </div>
  </body>
 </html>

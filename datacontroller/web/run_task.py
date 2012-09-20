@@ -1,4 +1,5 @@
-from web.models import TYPE_LOOKUP, STATUS_LOOKUP, Host, SiteDir
+from web.models import TYPE_LOOKUP, STATUS_LOOKUP, Host, SiteDir, File
+from web.directoryIndex import Directory
 from threading import Thread
 from subprocess import call
 from cStringIO import StringIO
@@ -10,8 +11,31 @@ import os
 def finish_task(task):
     task.job_status = STATUS_LOOKUP["DONE"]
     task.save()
+    #Update File list
+    root = SiteDir.objects.get().root_dir
+    site = task.site.folder_name
+    directory = task.output_folder
+    out_dir = "%s%s/%s"  % (root, site, directory)
+    remove = "%s%s/"  % (root, site)
+    remove_dir = os.path.abspath(remove)
+    filelist = Directory(out_dir).getFileList()
+    site = task.site
+    add_files = []
+    for filename in filelist:
+        name = filename[0][len(remove_dir)+1:]
+        file_o, created = File.objects.get_or_create(site=site, filename=name)
+        if created:
+            add_files.append(file_o)
+        print name
+
+
+
     tasks = task.successors.all()
     for t in tasks:
+        for f in add_files:
+            t.input_files.add(f)
+        if t.job_status != STATUS_LOOKUP["NOTDONE"]:
+            continue
         can_execute = True
         for pred in t.predecessors.all():
             if pred.job_status != STATUS_LOOKUP["DONE"]:

@@ -1,5 +1,5 @@
 from  django.contrib import admin
-from web.models import Job, Site, Task,File, Host, SiteDir, Category
+from web.models import  Job ,  Site, Task,File, Host, SiteDir, Category
 
 class JobAdmin(admin.ModelAdmin):
    list_display = ["name", 'type']
