@@ -2,6 +2,11 @@
 
 {% block title %}Zamani Project{% endblock %}
 
+{% block scripts %}
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static "index.css" %}"/>
+{% endblock %}
+
 {% block content %}
 
 <div id="sites">
@@ -9,15 +14,15 @@
  <div class="site {% if site.filtered %}exclude{% endif %}">{{site.name}}</div>
  {% endfor %}
 </div>
-
+<label for="user_task_list">Your Tasks:</label>
 <div id="user_task_list">
  <table>
   <tr>
-   <th>Name of task</th>
+   <th class="tl">Name of task</th>
    <th>Site</th>
    <th>Priority</th>
    <th>Category</th>
-   <th>Status</th>
+   <th class="tr">Status</th>
   </tr>
   {% for task in user_tasks %}
  <tr>
@@ -31,15 +36,16 @@
  </table>
 </div>
 
+<label for="task_list">Team overview:</label>
 <div id="task_list">
  <table>
   <tr>
-   <th>Name of task</th>
+   <th class="tl">Name</th>
    <th>Site</th>
    <th>Priority</th>
    <th>Category</th>
    <th>Assignee</th>
-   <th>Status</th>
+   <th class="tr">Status</th>
   </tr>
  {% for task in tasks %}
  <tr>

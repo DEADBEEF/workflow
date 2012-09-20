@@ -8,7 +8,7 @@ from web.run_task import transfer_back, transfer_files,  transfer_back_files
 from web.run_task import run_task as run_process_task
 from web.run_task import finish_task as finish_process_task
 from datetime import datetime
-from web.forms import TaskForm, AddUserTaskForm, AddServerTaskForm, JobForm, CategoryForm
+from web.forms import TaskForm, AddUserTaskForm, AddServerTaskForm, JobForm, CategoryForm, SiteForm
 import json
 
 def timesince(dt, end=None, default="instantly"):
@@ -62,10 +62,11 @@ def login(request):
 
 @login_required(login_url="/login")
 def task(request, site, task_id):
+    sites = Site.objects.filter(active=True)
     task = Task.objects.get(id=task_id)
     user = request.user
     files = task.input_files.all()
-    data = {'task':task, 'files': files, 'site': site}
+    data = {'task':task, 'files': files, 'site': site, 'sites':sites}
     if task.job_status == STATUS_LOOKUP["INPROGRESS"]:
         data["started"] = u"Started: %s ago" % timesince(task.started)
         data["progress"] = True
@@ -130,6 +131,7 @@ def upload(request):
 
 @permission_required('web.edit_task', login_url="/login/")
 def edit_task(request, site, task_id):
+    sites = Site.objects.filter(active=True)
     task = Task.objects.get(id=task_id)
     if request.method =="GET":
         form = TaskForm(instance=task)
@@ -148,12 +150,13 @@ def edit_task(request, site, task_id):
                 pred.successors.add(task)
                 pred.save()
             return redirect('web.views.view_site', site=site)
-    return render_to_response('edit.html', {'form':form, 'task': task },
+    return render_to_response('edit.html', {'form':form, 'task': task, 'sites':sites },
         context_instance=RequestContext(request) )
 
 
 @permission_required('web.edit_task', login_url="/login/")
 def view_site(request, site):
+    sites = Site.objects.filter(active=True)
     site = Site.objects.get(id=site)
     tasks = Task.objects.filter(site=site) #Active sites
     categories = Category.objects.all()
@@ -164,7 +167,8 @@ def view_site(request, site):
     jobs = Job.objects.all()
     return render_to_response('site.html', {'tasks':tasks, 'user_form': user_form,
         'server_form':server_form, 'site_id':site.id, 'job_form': job_form, 'jobs':jobs,
-        'categories': categories, 'category_form': category_form }
+        'categories': categories, 'category_form': category_form,
+        'site':site, 'sites': sites}
         ,context_instance=RequestContext(request) )
 
 @permission_required('web.edit_task', login_url="/login/")
@@ -257,6 +261,23 @@ def add_category(request):
             Category.objects.get_or_create(**form.cleaned_data)
 
         return redirect(request.META['HTTP_REFERER'])
+
+@login_required(login_url="/login")
+def sites(request):
+    sites = Site.objects.filter(active=True)
+    inactive = Site.objects.filter(active=False)
+    form = SiteForm()
+    return render_to_response('sites.html', {'sites':sites,'inactive': inactive, 'form':form  },
+        context_instance=RequestContext(request) )
+
+@permission_required('web.edit_task')
+def add_site(request):
+    if request.method == "POST":
+        form = SiteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('web.views.view_site', site=form.cleaned_data["id"])
+
 
 
 

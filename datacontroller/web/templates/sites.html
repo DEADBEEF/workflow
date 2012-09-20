@@ -1,0 +1,44 @@
+{% extends 'base.html'%}
+
+{% block title %}Sites{% endblock %}
+
+{% block scripts %}
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'sites.css' %}" />
+<script type="text/javascript" src="{% static 'sites.js'%}"></script>
+{% endblock %}
+
+
+{% block content %}
+<div id="active_sites">
+  Active Sites:
+  <ul>
+  {% for site in sites %}
+  <li><a href="{% url web.views.view_site site=site.id %}">{{site.name}}</a> </li>
+  {% endfor %}
+  <ul>
+  </div>
+ {% if inactive %}
+ <div id="inactive_sites">
+  Inactive Sites:
+  <ul>
+  {% for site in inactive %}
+  <li><a href="{% url web.views.view_site site=site.id %}">{{site.name}}</a> </li>
+  {% endfor %}
+  <ul>
+  </div>
+  {% endif %}
+  <button id="add_site_button" type="button">Add Site</button>
+  <div id="add_site" class="hidden">
+   Adding code here
+   <form id="add_form" method="POST" action="{% url web.views.add_site %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add</button>
+   </form>
+  </div>
+
+
+{% endblock %}
+
+

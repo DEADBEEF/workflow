@@ -8,41 +8,42 @@
 {% endblock %}
 
 {% block content %}
-Coming soon
-
+<div id="task_list">
+    <h3>{{site.name}}</h3>
+    <div class="workflow_vis">
+        WORKFLOW VISUALISATION
+    </div>
 <form action="{% url web.views.run_task %}" method="post">{% csrf_token %}
  <input type="hidden" name="site" value="{{ site_id }}"/>
  <input type="hidden" name="next" value="{% url web.views.view_site site=site_id  %}"/>
  <button id="run_tasks" type="submit">Run Tasks</button>
 </form>
-<div id="task_list">
  <table>
   <tr>
-   <th>Name of task</th>
+   <th class="tl">Name of task</th>
    <th>Edit</th>
    <th>Site</th>
    <th>Priority</th>
    <th>Category</th>
    <th>Assignee</th>
-   <th>Status</th>
+   <th class="tr">Status</th>
   </tr>
  {% for task in tasks %}
  <tr>
   <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">
    {{ task.job_type.name }}
   </a></td>
-   <td><a href="{% url web.views.edit_task site=task.site.id task_id=task.id %}">
+   <td class="center"><a href="{% url web.views.edit_task site=task.site.id task_id=task.id %}">
    Edit
   </a></td>
-   <td>{{ task.site }}</td>
-   <td>{{ task.priority }}</td>
-   <td>{{ task.job_type.category }}</td>
-   <td>{{ task.assignee }}</td>
-   <td>{{ task.get_job_status_display }}</td>
+   <td class="center">{{ task.site }}</td>
+   <td class="center" >{{ task.priority }}</td>
+   <td class="center">{{ task.job_type.category }}</td>
+   <td class="center">{{ task.assignee }}</td>
+   <td class="center">{{ task.get_job_status_display }}</td>
   </tr>
  {% endfor %}
  </table>
-</div>
 
 <div id="add_task">
  <button id="user_but" type="button">Add User Task</button>
@@ -64,6 +65,7 @@ Coming soon
   </form>
   </div>
 </div>
+<hr/>
 <button id="view_job" type="button">Jobs</button>
 <button id="view_category" type="button">Category</button>
 <div id="jobs" class="hidden">
@@ -120,10 +122,10 @@ Coming soon
     <div id="job_view">
         <table>
             <tr>
-                <th>Name</th>
+                <th class="tl">Name</th>
                 <th>Type</th>
                 <th>Category</th>
-                <th>Edit</th>
+                <th class="tr">Edit</th>
             </tr>
         {% for job in jobs %}
             <tr>
@@ -136,7 +138,7 @@ Coming soon
         </table>
     </div>
 </div>
-<div id="category" class="hidden">
+    <div id="category" class="hidden">
     <div id="add_category" >
         <button id="cat_but" type="button">Add Category</button>
         <div id="cat_div" class="hidden">
@@ -147,10 +149,10 @@ Coming soon
             </form>
         </div>
     </div>
-    <div id="job_view">
+    <div id="category_view">
         <table>
             <tr>
-                <th>Name</th>
+                <th class="tl tr">Name</th>
             </tr>
         {% for cat in categories %}
             <tr>
@@ -161,5 +163,6 @@ Coming soon
     </div>
 </div>
 
+</div>
 
 {% endblock %}

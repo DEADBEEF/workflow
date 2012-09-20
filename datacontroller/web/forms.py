@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from web.models import Job, Task, TYPE_LOOKUP, Category
+from web.models import Job, Task, TYPE_LOOKUP, Category, Site
 
 class TaskForm(forms.ModelForm):
     class Meta:
@@ -46,4 +46,8 @@ class JobForm(forms.ModelForm):
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
+
+class SiteForm(forms.ModelForm):
+    class Meta:
+        model = Site
 
