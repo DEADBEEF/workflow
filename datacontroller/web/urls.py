@@ -17,4 +17,6 @@ urlpatterns = patterns('web.views',
         url(r'^getjob/$', 'get_job'),
         url(r'^addcategory/$', 'add_category'),
         url(r'^addsite/$', 'add_site'),
+        url(r'^addDep/$', 'add_dependency'),
+        url(r'^removeDep/$', 'remove_dependency'),
         )

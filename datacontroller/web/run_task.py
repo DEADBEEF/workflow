@@ -355,6 +355,8 @@ def transfer_back_files(task, host=None):
     AsyncTaskTransferBackFiles(task, host).start()
 
 def run_task(task):
+    if task.assignee == None:
+        return
     if task.job_type.type == TYPE_LOOKUP['SERVER-1-1']:
         AsyncTask11(task).start()
     elif task.job_type.type == TYPE_LOOKUP['SERVER-M-1']:

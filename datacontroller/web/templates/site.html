@@ -4,14 +4,44 @@
 {% block scripts %}
 {% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static "site.css" %}" />
+<link type="text/css" href="{% static "jquery-ui.css" %}" rel="stylesheet" />
 <script type="text/javascript" src="{% static "site.js" %}" ></script>
+<script type="text/javascript" >
+    var task_edges = eval('{{edges|safe}}');
+{% if perms.web.edit_task %}
+    var privelege = true;
+{% endif %}
+</script>
+<script type="text/javascript" src="{% static "visual_site.js" %}" ></script>
 {% endblock %}
 
 {% block content %}
 <div id="task_list">
     <h3>{{site.name}}</h3>
-    <div class="workflow_vis">
-        WORKFLOW VISUALISATION
+    <div id="wrapper" style="width:{{width}}px;height:{{height}}px;">
+    <div id="workflow_vis" style="width:{{width }}px;height:{{height}}px">
+        <div id="dialog" title="Confirmation Required">
+            Are you sure you want to remove this dependency?
+        </div>
+        {% for node in nodes %}
+        <div id="task{{node.id}}" class="taskNode draggable {{node.div_class}}"
+            style="left:{{node.x}}px;top:{{node.y}}px;position:absolute;" >
+            <a href="{% url web.views.task site=node.task.site.id task_id=node.id%}">
+                {{node.task.job_type.name}}</a>
+            <br/>
+            {% if node.assigned %}
+            <div class="user">{{node.task.assignee}}</div>
+            {% else %}
+            <div class="user">No user assigned</div>
+            {% endif %}
+            <div class="files">{{node.files}}</div>
+            {% if perms.web.edit_task %}
+            <a href="{% url web.views.edit_task site=node.task.site.id task_id=node.id%}">Edit</a>
+            <div class="source"></div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
     </div>
 <form action="{% url web.views.run_task %}" method="post">{% csrf_token %}
  <input type="hidden" name="site" value="{{ site_id }}"/>
@@ -21,7 +51,7 @@
  <table>
   <tr>
    <th class="tl">Name of task</th>
-   <th>Edit</th>
+   {%if perms.web.edit_task %}<th>Edit</th>{% endif %}
    <th>Site</th>
    <th>Priority</th>
    <th>Category</th>
@@ -33,9 +63,10 @@
   <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">
    {{ task.job_type.name }}
   </a></td>
+   {%if perms.web.edit_task %}
    <td class="center"><a href="{% url web.views.edit_task site=task.site.id task_id=task.id %}">
    Edit
-  </a></td>
+  </a></td>{%endif%}
    <td class="center">{{ task.site }}</td>
    <td class="center" >{{ task.priority }}</td>
    <td class="center">{{ task.job_type.category }}</td>
@@ -45,6 +76,7 @@
  {% endfor %}
  </table>
 
+{%if perms.web.edit_task %}
 <div id="add_task">
  <button id="user_but" type="button">Add User Task</button>
  <button id="server_but" type="button">Add Server Task</button>
@@ -65,10 +97,12 @@
   </form>
   </div>
 </div>
+{%endif %}
 <hr/>
 <button id="view_job" type="button">Jobs</button>
 <button id="view_category" type="button">Category</button>
 <div id="jobs" class="hidden">
+    {%if perms.web.edit_task %}
     <div id="add_job" >
         <button id="add_user_job" type="button">Add User Job</button>
         <button id="add_server_job" type="button">Add Server Job</button>
@@ -119,26 +153,35 @@
             </form>
         </div>
     </div>
+
+    {% endif %}
     <div id="job_view">
         <table>
             <tr>
                 <th class="tl">Name</th>
                 <th>Type</th>
+                {%if perms.web.edit_task %}
                 <th>Category</th>
                 <th class="tr">Edit</th>
+                {%else%}
+                <th class="tr">Category</th>
+                {%endif%}
             </tr>
         {% for job in jobs %}
             <tr>
                 <td>{{ job.name }}</td>
                 <td>{{ job.get_type_display }}</td>
                 <td>{{ job.category.category_name  }}</td>
+                {%if perms.web.edit_task %}
                 <td><button type="button" onclick="populate_job({{job.id}})">Edit</button></td>
+                {%endif%}
             </tr>
         {% endfor %}
         </table>
     </div>
 </div>
-    <div id="category" class="hidden">
+<div id="category" class="hidden">
+    {%if perms.web.edit_task %}
     <div id="add_category" >
         <button id="cat_but" type="button">Add Category</button>
         <div id="cat_div" class="hidden">
@@ -149,6 +192,7 @@
             </form>
         </div>
     </div>
+    {% endif %}
     <div id="category_view">
         <table>
             <tr>
