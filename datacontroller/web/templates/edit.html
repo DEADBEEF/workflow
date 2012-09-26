@@ -17,10 +17,10 @@
     {% if task.job_type.type == '3' %}
     <label for="id_assignee">Assignee:</label>
     {{form.assignee}}
-    </div>
     {% else %}
     {{form.assignee}}
     {% endif %}
+    </div>
     <div id="priority_div">
         <label for="id_priority">Priority:</label>
         {{form.priority}}

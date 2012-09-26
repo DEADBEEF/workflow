@@ -3,13 +3,16 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.contrib.auth.models import User
-from web.models import Task, Site, STATUS_LOOKUP, Job, TYPE_LOOKUP, Host, Category
+from web.models import Task, Site, STATUS_LOOKUP, Job, TYPE_LOOKUP, Host, Category, SiteDir
 from web.run_task import transfer_back, transfer_files,  transfer_back_files
 from web.run_task import run_task as run_process_task
 from web.run_task import finish_task as finish_process_task
+from web.directoryIndex import Directory
 from datetime import datetime
 from web.forms import TaskForm, AddUserTaskForm, AddServerTaskForm, JobForm, CategoryForm, SiteForm
 import json
+import os
+
 
 def timesince(dt, end=None, default="instantly"):
     """
@@ -51,6 +54,9 @@ def index(request):
     for i in xrange(len(sites)):
         if sites[i].id in exclude:
             sites[i].filtered = True
+            sites[i].url = ",".join([ x for x in exclude if x != sites[i].id and x != "" ])
+        else:
+            sites[i].url = ",".join(exclude + [sites[i].id])
     for ex in exclude:
         tasks = tasks.exclude(site__id=ex)
     user_tasks = tasks.filter(assignee=user)
@@ -136,7 +142,7 @@ def edit_task(request, site, task_id):
     if request.method =="GET":
         form = TaskForm(instance=task)
         print dir(form)
-        return render_to_response('edit.html', {'form':form, 'task': task },
+        return render_to_response('edit.html', {'form':form, 'task': task, 'sites': sites },
                 context_instance=RequestContext(request) )
     elif request.method == "POST":
         form = TaskForm(request.POST,instance=task )
@@ -153,12 +159,55 @@ def edit_task(request, site, task_id):
     return render_to_response('edit.html', {'form':form, 'task': task, 'sites':sites },
         context_instance=RequestContext(request) )
 
+class TaskNode:
+    def __init__(self, id, x, y, task):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.task = task
+        self.assigned = True
+        files = self.task.input_files.all()
+        self.files = "%d input file%s" % (len(files), ("s", "")[len(files) == 1] )
+        if task.job_status == STATUS_LOOKUP["FAILED"] or \
+            task.assignee == None:
+            self.assigned = False
+            self.div_class = "failed"
+        elif task.job_status == STATUS_LOOKUP["NOTDONE"]:
+            self.div_class = "notdone"
+        elif task.job_status == STATUS_LOOKUP["TRANSFERING"] or \
+            task.job_status == STATUS_LOOKUP["TRANSFER_BACK"]:
+            self.div_class = "auto"
+        elif task.job_status == STATUS_LOOKUP["INPROGRESS"] or \
+            task.job_status == STATUS_LOOKUP["VALIDATE"]:
+            self.div_class = "busy"
+        elif task.job_status == STATUS_LOOKUP["DONE"]:
+            self.div_class = "done"
 
-@permission_required('web.edit_task', login_url="/login/")
+
+
+@login_required(login_url="/login/")
 def view_site(request, site):
     sites = Site.objects.filter(active=True)
     site = Site.objects.get(id=site)
     tasks = Task.objects.filter(site=site) #Active sites
+    import networkx as nx
+    G = nx.DiGraph()
+    for task in tasks:
+        G.add_node(task.id, size=200)
+    for task in tasks:
+        for succ in task.successors.all():
+            G.add_edge("task%d" % task.id, "task%d" % succ.id)
+    edges = json.dumps(G.edges())
+    layout = nx.spring_layout(G)
+    print layout
+    nodes = [ TaskNode(task.id, layout[task.id][0]*600 + 10, (layout[task.id][1])*250 +10, task)
+            for task in tasks ]
+
+    x,y = 650,0
+    for node in layout.values():
+        x, y = max(x, int(node[0]*600)+50), max(y, int(node[1]*250)+50)
+    x += 70
+    y += 70
     categories = Category.objects.all()
     user_form = AddUserTaskForm()
     server_form = AddServerTaskForm()
@@ -168,14 +217,43 @@ def view_site(request, site):
     return render_to_response('site.html', {'tasks':tasks, 'user_form': user_form,
         'server_form':server_form, 'site_id':site.id, 'job_form': job_form, 'jobs':jobs,
         'categories': categories, 'category_form': category_form,
-        'site':site, 'sites': sites}
+        'site':site, 'sites': sites, 'width': x,  'height': y, 'nodes':nodes,
+        'edges':edges}
         ,context_instance=RequestContext(request) )
+
+@permission_required('web.edit_task', login_url="/login/")
+def add_dependency(request):
+    if request.method == "POST":
+        site_id= request.POST["site"]
+        sourceId = int(request.POST["sourceId"][4:])
+        targetId = int(request.POST["targetId"][4:])
+        site = Site.objects.get(id=site_id)
+        source = Task.objects.get(site=site,id=sourceId)
+        target = Task.objects.get(site=site,id=targetId)
+        source.successors.add(target)
+        target.predecessors.add(source)
+    return HttpResponse("good")
+
+
+@permission_required('web.edit_task', login_url="/login/")
+def remove_dependency(request):
+    if request.method == "POST":
+        site_id= request.POST["site"]
+        sourceId = int(request.POST["sourceId"][4:])
+        targetId = int(request.POST["targetId"][4:])
+        site = Site.objects.get(id=site_id)
+        source = Task.objects.get(site=site,id=sourceId)
+        target = Task.objects.get(site=site,id=targetId)
+        source.successors.remove(target)
+        target.predecessors.remove(source)
+    return HttpResponse("good")
+
 
 @permission_required('web.edit_task', login_url="/login/")
 def add_task(request):
     if request.method == 'POST':
         type = request.POST["job_type"]
-        job_type = Job.objects.get(name=type)
+        job_type = Job.objects.get(id=type)
         site = Site.objects.get(id=request.POST["site_id"])
         task = Task.objects.create(job_type=job_type, site=site)
         if job_type.type != TYPE_LOOKUP["USER"]:
@@ -270,12 +348,47 @@ def sites(request):
     return render_to_response('sites.html', {'sites':sites,'inactive': inactive, 'form':form  },
         context_instance=RequestContext(request) )
 
-@permission_required('web.edit_task')
+@permission_required('web.edit_task', login_url="/login")
 def add_site(request):
     if request.method == "POST":
         form = SiteForm(request.POST)
         if form.is_valid():
+            template_site = form.cleaned_data["template"]
+            site_id = form.cleaned_data["id"]
             form.save()
+            site = Site.objects.get(id=site_id)
+            task_map = {}
+            id_map = {}
+            server_user = User.objects.get(username="server")
+            if template_site != None:
+                template_tasks = Task.objects.filter(site=template_site)
+                for t_task in template_tasks:
+                    new_task = Task.objects.create(priority=t_task.priority,
+                            site=site, job_type=t_task.job_type,
+                            output_folder=t_task.output_folder,
+                            job_status=STATUS_LOOKUP["NOTDONE"])
+                    if t_task.assignee == server_user:
+                        new_task.assignee = server_user
+                        new_task.save()
+                    id_map[t_task.id] = new_task.id
+                    task_map[t_task.id] = t_task
+                    task_map[new_task.id] = new_task
+
+                for t_task in template_tasks:
+                    for succ in t_task.successors.all():
+                        task_map[id_map[t_task.id]].successors.add(task_map[id_map[succ.id]])
+                        task_map[id_map[succ.id]].predecessors.add(task_map[id_map[t_task.id]])
+                #ADD FILES
+                root = SiteDir.objects.get().root_dir
+                ofolder = "%s/%s/" % (root, site.folder_name)
+                try:
+                    os.mkdir(ofolder)
+                except OSError as exc: # Python >2.5
+                    pass
+                filelist = Directory(ofolder).getFileList()
+                for filename in filelist:
+                    name = filename[0][len(ofolder)+1:]
+                    file_o, created = File.objects.get_or_create(site=site, filename=name)
             return redirect('web.views.view_site', site=form.cleaned_data["id"])
 
 

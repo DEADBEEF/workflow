@@ -81,6 +81,13 @@ function add_cat() {
 };
 
 $(document).ready(function () {
+    $("#dialog").dialog({
+        autoOpen: false,
+        modal:true,
+        bgiframe: true,
+        width: 300,
+        height:150
+    });
     $("#user_but").click(show_user);
     $("#server_but").click(show_server);
     $("#view_job").click(show_jobs);

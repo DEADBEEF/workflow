@@ -68,7 +68,7 @@ class Task(models.Model):
     log = models.TextField(default="", blank=True)
     site = models.ForeignKey(Site)
     job_type = models.ForeignKey(Job)
-    assignee = models.ForeignKey(User, null=True)
+    assignee = models.ForeignKey(User, null=True, blank=True)
     input_files = models.ManyToManyField(File, blank=True)
     output_folder = models.CharField(max_length=255, default="")
     predecessors = models.ManyToManyField("self", blank=True, symmetrical=False, related_name="pred+")

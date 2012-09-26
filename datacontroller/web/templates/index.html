@@ -5,13 +5,14 @@
 {% block scripts %}
 {% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static "index.css" %}"/>
+<script type="text/javascript" src="{% static "index.js" %}"></script>
 {% endblock %}
 
 {% block content %}
 
 <div id="sites">
  {% for site in sites %}
- <div class="site {% if site.filtered %}exclude{% endif %}">{{site.name}}</div>
+ <a href="?exclude={{site.url}}"><div class="site {% if site.filtered %}exclude{% endif %}">{{site.name}}</div></a>
  {% endfor %}
 </div>
 <label for="user_task_list">Your Tasks:</label>
