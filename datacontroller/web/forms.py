@@ -48,6 +48,8 @@ class CategoryForm(forms.ModelForm):
         model = Category
 
 class SiteForm(forms.ModelForm):
+    template = forms.ModelChoiceField(queryset=Site.objects.all(), empty_label="New workflow",
+                            required=False)
     class Meta:
         model = Site
 
