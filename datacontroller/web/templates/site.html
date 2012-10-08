@@ -128,6 +128,7 @@
         </div>
         <div id="server_job_div" class="hidden">
             <form id="user_job"  action="{% url web.views.update_job %}" method="post">
+                {%csrf_token%}
                 <div id="id_name_div" />
                 <input id="id_id" type="hidden" name="id" value="0"/>
                 <label for="id_name">Name:</label>
