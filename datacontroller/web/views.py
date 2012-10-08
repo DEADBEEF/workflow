@@ -139,9 +139,9 @@ def upload(request):
 def edit_task(request, site, task_id):
     sites = Site.objects.filter(active=True)
     task = Task.objects.get(id=task_id)
+    print task.site
     if request.method =="GET":
         form = TaskForm(instance=task)
-        print dir(form)
         return render_to_response('edit.html', {'form':form, 'task': task, 'sites': sites },
                 context_instance=RequestContext(request) )
     elif request.method == "POST":
