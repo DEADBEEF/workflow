@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from web.models import Job, Task, TYPE_LOOKUP, Category, Site
+from web.models import Job, Task, TYPE_LOOKUP, Category, Site, File
 
 class TaskForm(forms.ModelForm):
     class Meta:
@@ -15,11 +15,13 @@ class TaskForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(TaskForm, self).__init__(*args, **kwargs)
         instance = kwargs['instance']
+        site = instance.site
+        print site
+        self.fields['input_files'].queryset = File.objects.filter(site=site)
         if instance.job_type.type != TYPE_LOOKUP['USER']:
             self.fields['assignee'].widget = forms.HiddenInput()
         else:
             self.fields['assignee'].queryset = User.objects.exclude(username='server')
-        site = instance.site
         self.fields['predecessors'].queryset = Task.objects.filter(site=site).exclude(id=instance.id)
 
 
