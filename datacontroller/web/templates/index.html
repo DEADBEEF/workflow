@@ -3,61 +3,133 @@
 {% block title %}Zamani Project{% endblock %}
 
 {% block scripts %}
+
 {% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static "index.css" %}"/>
 <script type="text/javascript" src="{% static "index.js" %}"></script>
 {% endblock %}
 
+{% block header %}
+    <h1 class="page-title">Task Overview</h1>
+{% endblock %}
+        
+{% block breadcrumb %}
+    <li class="active">Home</li>
+{% endblock %}
+   
 {% block content %}
-
-<div id="sites">
- {% for site in sites %}
- <a href="?exclude={{site.url}}"><div class="site {% if site.filtered %}exclude{% endif %}">{{site.name}}</div></a>
- {% endfor %}
+<div class="row-fluid">
+    <div class="block">
+        <p class="block-heading">Outstanding tasks</p>
+        <div class="block-body">
+         <table class="table">
+            <thead>
+              <tr>
+               <th>Name of task</th>
+               <th>Site</th>
+               <th>Priority</th>
+               <th>Category</th>
+               <!--<th>Status</th>-->
+              </tr>
+            </thead>
+            <tbody>
+             {% for task in user_tasks %}
+                 <tr>
+                   <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.job_type.name }}</a></td>
+                   <td>{{ task.site }}</td>
+                   <td>{{ task.priority }}</td>
+                   <td>{{ task.job_type.category }}</td>
+                   <!--<td>{{ task.get_job_status_display }}</td>-->
+                  </tr>
+             {% endfor %}
+            </tbody>
+         </table>
+        </div>
+    </div>
 </div>
-<label for="user_task_list">Your Tasks:</label>
-<div id="user_task_list">
- <table>
-  <tr>
-   <th class="tl">Name of task</th>
-   <th>Site</th>
-   <th>Priority</th>
-   <th>Category</th>
-   <th class="tr">Status</th>
-  </tr>
-  {% for task in user_tasks %}
- <tr>
-   <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.job_type.name }}</a></td>
-   <td>{{ task.site }}</td>
-   <td>{{ task.priority }}</td>
-   <td>{{ task.job_type.category }}</td>
-   <td>{{ task.get_job_status_display }}</td>
-  </tr>
- {% endfor %}
- </table>
+<div class="row-fluid">
+    <div class="block span6">
+        <a href="#validationwidget" class="block-heading" data-toggle="collapse">Awaiting Validation</a>
+        <div id="validationwidget" class="block-body collapse in">
+         <table class="table">
+            <thead>
+              <tr>
+               <th>Name of task</th>
+               <th>Site</th>
+               <th>Category</th>
+               <!--<th>Status</th>-->
+              </tr>
+            </thead>
+            <tbody>
+             {% for task in user_tasks %}
+                 <tr>
+                   <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.job_type.name }}</a></td>
+                   <td>{{ task.site }}</td>
+                   <td>{{ task.job_type.category }}</td>
+                   <!--<td>{{ task.get_job_status_display }}</td>-->
+                  </tr>
+             {% endfor %}
+            </tbody>
+         </table>
+        </div>
+    </div>
+    <div class="block span6">
+        <a href="#futurewidget" class="block-heading" data-toggle="collapse">Future Tasks</a>
+        <div id="futurewidget" class="block-body collapse in">
+         <table class="table">
+            <thead>
+              <tr>
+               <th>Name of task</th>
+               <th>Site</th>
+               <th>Category</th>
+               <!--<th>Status</th>-->
+              </tr>
+            </thead>
+            <tbody>
+             {% for task in user_tasks %}
+                 <tr>
+                   <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.job_type.name }}</a></td>
+                   <td>{{ task.site }}</td>
+                   <td>{{ task.job_type.category }}</td>
+                   <!--<td>{{ task.get_job_status_display }}</td>-->
+                  </tr>
+             {% endfor %}
+            </tbody>
+         </table>
+        </div>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="block">
+        <a href="#teamoverview" class="block-heading" datatoggle="collapse">Team Task overview</a>
+        <div id="teamoverview" class="block-body collapse in">
+            <table class="table">
+            <thead>
+             <tr>
+               <th class="tl">Name</th>
+               <th>Site</th>
+               <th>Priority</th>
+               <th>Category</th>
+               <th>Assignee</th>
+               <th class="tr">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+             {% for task in tasks %}
+             <tr>
+               <td>{{ task.job_type.name }}</td>
+               <td>{{ task.site }}</td>
+               <td>{{ task.priority }}</td>
+               <td>{{ task.job_type.category }}</td>
+               <td>{{ task.assignee }}</td>
+               <td>{{ task.get_job_status_display }}</td>
+              </tr>
+             {% endfor %}
+            </tbody>
+            </table>
+        <div>
+    </div>
 </div>
 
-<label for="task_list">Team overview:</label>
-<div id="task_list">
- <table>
-  <tr>
-   <th class="tl">Name</th>
-   <th>Site</th>
-   <th>Priority</th>
-   <th>Category</th>
-   <th>Assignee</th>
-   <th class="tr">Status</th>
-  </tr>
- {% for task in tasks %}
- <tr>
-   <td>{{ task.job_type.name }}</td>
-   <td>{{ task.site }}</td>
-   <td>{{ task.priority }}</td>
-   <td>{{ task.job_type.category }}</td>
-   <td>{{ task.assignee }}</td>
-   <td>{{ task.get_job_status_display }}</td>
-  </tr>
- {% endfor %}
- </table>
 </div>
 {% endblock %}
