@@ -43,31 +43,61 @@ def timesince(dt, end=None, default="instantly"):
             return u"%d %s" % (period, singular if period == 1 else plural)
     return default
 
+
 @login_required(login_url="/login/")
 def index(request):
     user = request.user
-    tasks = Task.objects.filter(site__active=True) #Active sites
-
+    tasks = Task.objects.all()
     sites = Site.objects.filter(active=True)
     GET = request.GET
-    exclude = GET.get('exclude', '').split(',')
-    for i in xrange(len(sites)):
-        if sites[i].id in exclude:
-            sites[i].filtered = True
-            sites[i].url = ",".join([ x for x in exclude if x != sites[i].id and x != "" ])
-        else:
-            sites[i].url = ",".join(exclude + [sites[i].id])
-    for ex in exclude:
-        tasks = tasks.exclude(site__id=ex)
+
+    data = {}
+    if GET.get("site", False):
+        tasks = tasks.filter(site__id=GET["site"])
+        for site in sites:
+            if site.id == GET["site"]:
+                site.task_url_active = True
+    else:
+        tasks= tasks.filter(site__active=True)
+    site_param = GET.copy()
+    for site in sites:
+        site_param["site"] = site.id
+        site.task_url = "?" + "&".join(["%s=%s" % (k,v) for k,v in site_param.items()])
+
     user_tasks = tasks.filter(assignee=user)
-    return render_to_response('index.html', {'user_tasks':user_tasks,
-        'sites': sites, 'tasks': tasks} )
+    outstanding = user_tasks.filter(job_status=STATUS_LOOKUP["INPROGRESS"])
+    if  user.has_perm('web.can_edit'):
+        validation_req =  tasks.filter(job_status=STATUS_LOOKUP["VALIDATE"])
+    else:
+        validation_req =  user_tasks.filter(job_status=STATUS_LOOKUP["VALIDATE"])
+    future = user_tasks.filter(job_status=STATUS_LOOKUP["NOTDONE"])
+    completed = user_tasks.filter(job_status=STATUS_LOOKUP["DONE"])
+    overview = tasks.exclude(job_status=STATUS_LOOKUP["DONE"]).exclude(job_status=STATUS_LOOKUP["NOTDONE"]).exclude(assignee=user)
+    data["user_task"] = user_tasks
+    data["outstanding"] = outstanding
+    data["validation_req"] = validation_req
+    data["future"] = future
+    data["completed"] = completed
+    data["overview"] = overview
+    data["tasks"] = tasks
+    data["sites"] = sites
+
+    return render_to_response('index.html', data, context_instance=RequestContext(request) )
 
 def login(request):
     return render_to_response('login.html', {} )
 
 @login_required(login_url="/login")
 def task(request, site, task_id):
+    JOB_STATUS = ((u'1', u'Either the dependencies of the task have not been met or the site has not been run yet.'),
+              (u'2', u'TRANSFERING'),
+              (u'3', u'INPROGRESS'),
+              (u'4', u'TRANSFER_BACK'),
+              (u'5', u'Task has been completed and is awaiting validation.'),
+              (u'6', u'DONE'),
+              (u'7', u'FAILED'))
+    STATUS_DESC_LOOKUP = {}
+    for k,v in JOB_STATUS: STATUS_DESC_LOOKUP[k] = v
     sites = Site.objects.filter(active=True)
     task = Task.objects.get(id=task_id)
     user = request.user
@@ -78,14 +108,16 @@ def task(request, site, task_id):
         data["progress"] = True
     elif task.job_status == STATUS_LOOKUP["DONE"] or \
         task.job_status == STATUS_LOOKUP["VALIDATE"]:
-        data["started"] = u"Finished: %s" % timesince(task.started, task.ended)
+        data["started"] = u"The task was completed in:  %s" % timesince(task.started, task.ended)
     if task.job_type.type != TYPE_LOOKUP["USER"]:
         data["server_task"] = True
-    elif task.job_status == STATUS_LOOKUP["VALIDATE"] and user.has_perm('web.can_edit'):
+    elif task.job_status == STATUS_LOOKUP["VALIDATE"] and user.has_perm('web.edit_task'):
         data["validate_button"] = True
     if user.has_perm('web.can_edit'):
         data["edit"] = True
-    if user != task.assignee or user.has_perm('web.can_edit'):
+    print STATUS_DESC_LOOKUP
+    task.status_display = STATUS_DESC_LOOKUP[task.job_status]
+    if user != task.assignee or user.has_perm('web.edit_task'):
         return render_to_response('task.html', data, context_instance=RequestContext(request))
     else:
         return HttpResponse("Not your task")

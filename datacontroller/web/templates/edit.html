@@ -4,15 +4,35 @@
 
 {% block scripts %}
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static "edit.css" %}"/>
+
+{% endblock %}
+
+{% block header %}
+    <h1 class="page-title">Edit - {{task.job_type.name}}</h1>
+{% endblock %}
+{% block breadcrumb %}
+<li><a href="{% url web.views.index %}">Home</a><span class="divider">/</span></li>
+<li><a href={% url web.views.view_site site=task.site.id %}>
+        {{task.site.name}}</a> <span class="divider">/</span></li>
+    <li><a href="{% url web.views.task site=task.site.id task_id=task.id%}">{{task.job_type.name}}</a><span class="divider">/</span></li>
+    <li class="active">Edit</li>
+
 
 {% endblock %}
 
 {% block content %}
-<div id="edit">
-<h3>{{ task.job_type.name }}</h3>
-<p>{{ task.job_type.description }}</p>
-<form id="update_task" action="." method="post">{%csrf_token%}
+<div class="row-fluid">
+    <div class="block">
+        <p class="block-heading">Description</p>
+        <p class="block-body">{{ task.job_type.description }}</p>
+    </div>
+</div>
+<div class="row-fluid">
+    <form id="update_task" action="." method="post">{%csrf_token%}
+        <div class="btn-toolbar">
+            <button class="btn btn-primary" type="submit"><i class="icon-save"></i> Save</button>
+        </div>
+    <div class="well">
     <div id="assignee_div">
     {% if task.job_type.type == '3' %}
     <label for="id_assignee">Assignee:</label>
@@ -37,7 +57,7 @@
         <label for="id_output_folder">Ouput Folder:</label>
         {{form.output_folder}}
     </div>
-    <button type="submit">Save Task</button>
+</div>
 </form>
 </div>
 
