@@ -12,11 +12,11 @@
 {% block header %}
     <h1 class="page-title">Task Overview</h1>
 {% endblock %}
-        
+
 {% block breadcrumb %}
     <li class="active">Home</li>
 {% endblock %}
-   
+
 {% block content %}
 <div class="row-fluid">
     <div class="block">
@@ -29,17 +29,15 @@
                <th>Site</th>
                <th>Priority</th>
                <th>Category</th>
-               <!--<th>Status</th>-->
               </tr>
             </thead>
             <tbody>
-             {% for task in user_tasks %}
+             {% for task in outstanding %}
                  <tr>
                    <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.job_type.name }}</a></td>
                    <td>{{ task.site }}</td>
                    <td>{{ task.priority }}</td>
                    <td>{{ task.job_type.category }}</td>
-                   <!--<td>{{ task.get_job_status_display }}</td>-->
                   </tr>
              {% endfor %}
             </tbody>
@@ -51,17 +49,38 @@
     <div class="block span6">
         <a href="#validationwidget" class="block-heading" data-toggle="collapse">Awaiting Validation</a>
         <div id="validationwidget" class="block-body collapse in">
-         <table class="table">
+            <table class="table">
+                {%if perms.web.can_edit %}
             <thead>
               <tr>
-               <th>Name of task</th>
+                <th>Name of task</th>
+                <th>Assignee</th>
                <th>Site</th>
                <th>Category</th>
                <!--<th>Status</th>-->
               </tr>
             </thead>
             <tbody>
-             {% for task in user_tasks %}
+             {% for task in validation_req %}
+                 <tr>
+                    <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.job_type.name }}</a></td>
+                    <td>{{task.assignee}}</td>
+                   <td>{{ task.site }}</td>
+                   <td>{{ task.job_type.category }}</td>
+                   <!--<td>{{ task.get_job_status_display }}</td>-->
+                  </tr>
+             {% endfor %}
+            </tbody>
+            {%else %}
+            <thead>
+              <tr>
+               <th>Name of task</th>
+               <th>Site</th>
+               <th>Category</th>
+              </tr>
+            </thead>
+            <tbody>
+             {% for task in validation_req %}
                  <tr>
                    <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.job_type.name }}</a></td>
                    <td>{{ task.site }}</td>
@@ -70,6 +89,7 @@
                   </tr>
              {% endfor %}
             </tbody>
+            {%endif%}
          </table>
         </div>
     </div>
@@ -86,7 +106,7 @@
               </tr>
             </thead>
             <tbody>
-             {% for task in user_tasks %}
+             {% for task in future %}
                  <tr>
                    <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.job_type.name }}</a></td>
                    <td>{{ task.site }}</td>
@@ -115,7 +135,7 @@
               </tr>
             </thead>
             <tbody>
-             {% for task in tasks %}
+             {% for task in overview %}
              <tr>
                <td>{{ task.job_type.name }}</td>
                <td>{{ task.site }}</td>
@@ -130,6 +150,32 @@
         <div>
     </div>
 </div>
-
+</div>
+<div class="row-fluid">
+    <div class="block span6">
+        <a href="#completedwidget" class="block-heading" data-toggle="collapse">Completed Tasks</a>
+        <div id="completedwidget" class="block-body collapse">
+         <table class="table">
+            <thead>
+              <tr>
+               <th>Name of task</th>
+               <th>Site</th>
+               <th>Category</th>
+               <!--<th>Status</th>-->
+              </tr>
+            </thead>
+            <tbody>
+             {% for task in completed %}
+                 <tr>
+                   <td><a href="{% url web.views.task site=task.site.id task_id=task.id %}">{{ task.job_type.name }}</a></td>
+                   <td>{{ task.site }}</td>
+                   <td>{{ task.job_type.category }}</td>
+                   <!--<td>{{ task.get_job_status_display }}</td>-->
+                  </tr>
+             {% endfor %}
+            </tbody>
+         </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

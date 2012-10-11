@@ -1,11 +1,15 @@
 function show_user() {
     $("#server").addClass("hidden");
-    $("#user").toggleClass("hidden");
+    $("#user").removeClass("hidden");
+    $("#user_but").addClass("hidden");
+    $("#server_but").addClass("hidden");
 }
 
 function show_server() {
+    $("#server").removeClass("hidden");
     $("#user").addClass("hidden");
-    $("#server").toggleClass("hidden");
+    $("#user_but").addClass("hidden");
+    $("#server_but").addClass("hidden");
 
 
 }
@@ -80,6 +84,13 @@ function add_cat() {
     $("#cat_div").removeClass("hidden");
 };
 
+function cancel_user() {
+    $("#user").addClass("hidden");
+    $("#server").addClass("hidden");
+    $("#user_but").removeClass("hidden");
+    $("#server_but").removeClass("hidden");
+}
+
 $(document).ready(function () {
     $("#dialog").dialog({
         autoOpen: false,
@@ -95,4 +106,6 @@ $(document).ready(function () {
     $("#add_user_job").click(add_user_job);
     $("#add_server_job").click(add_server_job);
     $("#cat_but").click(add_cat);
+    $("#user_cancel").click(cancel_user);
+    $("#server_cancel").click(cancel_user);
 });
