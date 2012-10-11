@@ -5,66 +5,93 @@
 {% block scripts %}
 {% load staticfiles %}
 <script type="text/javascript" src="{% static "task.js" %}" ></script>
-<link rel="stylesheet" type="text/css" href="{% static "task.css"%}"/>
 {% endblock %}
 
-{% block content %}
-<div id="task">
-    <div id="task_name"><h3>{{ task.job_type.name }}</h3></div>
-    {% if edit %}
-    <div id="edit_div">
-        <a href="{% url web.views.edit_task site=site task_id=task.id %}">Edit</a>
+{% block header %}
+    <div class="stats">
+        <a class="stat" href="{% url web.views.edit_task site=task.site.id task_id=task.id %}"><i class="icon-pencil"></i></a>
+        <p class="stat">
+            Priority<span class="number">{{task.priority}}</span>
+        </p>
+        {% if perms.web.edit_task %}
+        {% endif%}
     </div>
-    {% endif %}
 
- <div id="site">Site: {{ task.site }}</div>
- <div id="priority">Priority: {{ task.priority }}</div>
- <div id="status">
-  Status: {{task.get_job_status_display}}
-  {% if progress %}
-  <form action="{% url web.views.finish_task%}" method="post" >{% csrf_token %}
-   <input type="hidden" name="task_id" value="{{ task.id }}">
-   <button id="finish" type="submit">Finish Task</button>
-  </form>
-  {% elif validate_button %}
-  <form action="{% url web.views.finish_task%}" method="post" >{% csrf_token %}
-   <input type="hidden" name="validate_task" value="{{ task.id }}">
-   <button id="finish" type="submit">Validate Task</button>
-  </form>
+    <h1 class="page-title">{{task.job_type.name}}</h1>
+ {% endblock %}
+
+ {% block breadcrumb %}
+ <li><a href="{% url web.views.index %}">Home</a>
+    <span class="divider">/</span></li>
+    <li><a href={% url web.views.view_site site=task.site.id %}>
+        {{task.site.name}}</a><span class="divider">/</span> </li>
+    <li class="active">{{task.job_type.name}}</li>
+ {% endblock %}
+
+
+{% block content %}
+    <div class="row-fluid">
+        <div class="block span6">
+            <p class="block-heading">Description</p>
+            <div class="block-body">
+                <p> {{task.job_type.description}}</p>
+            </div>
+        </div>
+        <div class="block span6">
+            <p class="block-heading">Task Status</p>
+            <div class="block-body">
+                <p>{{task.status_display}} {{started}}</p>
+                {% if progress %}
+                <p>Once you have completed the the task
+                click the button below.</p>
+                <form action="{% url web.views.finish_task%}" method="post" >
+                    {% csrf_token %}
+                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                    <button class="btn btn-success" id="finish" type="submit">Finish Task</button>
+                </form>
+                {% elif validate_button %}
+                <form action="{% url web.views.finish_task%}" method="post" >
+                    {% csrf_token %}
+                    <p>Once you have validated the task click the button below</p>
+                    <input type="hidden" name="validate_task" value="{{ task.id }}">
+                    <button class="btn btn-success"  id="finish" type="submit">Validate Task</button>
+                </form>
   {% endif %}
- </div>
- {% if started %}<div id="duration">{{started}}</div>{% endif %}
- <hr/>
- <div id="description">Description: <p>{{ task.job_type.description }}</p></div>
- <div id="file_container">
-     {% if server_task %}
-     {% else %}
-  <form action="{% url web.views.start_transfer %}" method="post">{% csrf_token %}
-   <input type="hidden" name="task_id" value="{{ task.id }}">
-   <button name="files" value="in" type="submit">Transfer Input Files</button>
-   <button name="files" value="out" type="submit">Transfer Ouput Files</button>
-   <button name="files" value="all" type="submit">Transfer All Files</button>
-  </form>
+            </div>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="block">
+            <p class="block-heading">Task File Manager</p>
+            <div class="block-body">
+
+            {% if server_task %}
+            {% else %}
+            <form action="{% url web.views.start_transfer %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="task_id" value="{{ task.id }}">
+                <button class="btn btn-info" name="files" value="in" type="submit">Download Input Files</button>
+                <button class="btn btn-info" name="files" value="out" type="submit">Download Available Output Files</button>
+                <button class="btn btn-primary" name="files" value="all" type="submit">Download All Files</button>
+            </form>
+            <form action="{% url web.views.upload %}" method="post">{% csrf_token %}
+                <input type="hidden" name="task_id" value="{{ task.id }}">
+                <button class="btn btn-warning" name="upload" value="folder" type="submit">Upload Output Files</button> Output Folder:<span class="folder">{{ task.output_folder }}</span>
+            </form>
   {% endif %}
-  Input Files:
-  <div id="files">
-   {% for file in files %}
-    <div class="file">{{file.filename}}</div>
-   {% endfor %}
+            Input Files:
+            <div id="files">
+            {% for file in files %}
+            <div class="file">{{file.filename}}</div>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+
+  <div class="row-fluid">
+      <div class="block">
+          <p  class="block-heading">Task Output Log</p>
+          <pre style="margin:0px;height:300px;overflow:auto;" class="block-body ">{{ task.log }}</pre>
+    </div>
   </div>
- </div>
- <div id="output_contianer">
-  Ouput: <div class="folder">{{ task.output_folder }}</div>
- </div>
-     {% if server_task %}
-     {% else %}
-  <form action="{% url web.views.upload %}" method="post">{% csrf_token %}
-   <input type="hidden" name="task_id" value="{{ task.id }}">
-   <button name="upload" value="folder" type="submit">Upload Files</button>
-  </form>
-  {% endif %}
-  <div id="log_container">
-   Log: <pre>{{ task.log }}</pre>
-  </div>
-</div>
 {% endblock %}
