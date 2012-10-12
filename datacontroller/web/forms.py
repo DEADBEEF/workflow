@@ -5,11 +5,11 @@ from web.models import Job, Task, TYPE_LOOKUP, Category, Site, File
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ('assignee', 'priority', 'input_files', 'output_folder',
-                'predecessors')
+        fields = ('assignee', 'priority', 'input_files', 'output_folder')
+        #        'predecessors')
         widgets = {
                     'input_files': forms.CheckboxSelectMultiple(),
-                    'predecessors': forms.CheckboxSelectMultiple()
+        #            'predecessors': forms.CheckboxSelectMultiple()
                 }
         required = {'assignee': False }
     def __init__(self, *args, **kwargs):
@@ -22,7 +22,7 @@ class TaskForm(forms.ModelForm):
             self.fields['assignee'].widget = forms.HiddenInput()
         else:
             self.fields['assignee'].queryset = User.objects.exclude(username='server')
-        self.fields['predecessors'].queryset = Task.objects.filter(site=site).exclude(id=instance.id)
+        #self.fields['predecessors'].queryset = Task.objects.filter(site=site).exclude(id=instance.id)
 
 
 class AddUserTaskForm(forms.ModelForm):

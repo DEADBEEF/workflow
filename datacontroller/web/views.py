@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.contrib.auth.models import User
-from web.models import Task, Site, STATUS_LOOKUP, Job, TYPE_LOOKUP, Host, Category, SiteDir
+from web.models import Task, Site, STATUS_LOOKUP, Job, TYPE_LOOKUP, Host, Category, SiteDir, File
 from web.run_task import transfer_back, transfer_files,  transfer_back_files
 from web.run_task import run_task as run_process_task
 from web.run_task import finish_task as finish_process_task
@@ -13,6 +13,96 @@ from web.forms import TaskForm, AddUserTaskForm, AddServerTaskForm, JobForm, Cat
 import json
 import os
 
+class Structure:
+    def __init__(self):
+      self.dirs = {}
+      self.files = []
+      self.process = []
+    def build(self):
+      for fiO, fi in self.process:
+        parts = fi.split("/")
+        if len(parts) == 1:
+          self.files.append( (fiO, parts[0]) )
+        else:
+          if self.dirs.get(parts[0],None) is None:
+            self.dirs[parts[0]] = Structure()
+          self.dirs[parts[0]].process.append( (fiO, "/".join(parts[1:])) )
+      for struc in self.dirs.values():
+        struc.build()
+        
+    def getListInterface(self,selected):
+      result = "<ul>\n"
+      for key, direc in self.dirs.items():
+          result += "<li><i class=\"icon-book\"></i> %s\n%s</li>\n" % (key, direc.getListInterface(selected)) 
+      for fiO, fi in self.files:
+          #print dir(fiO)
+          if fiO in selected:
+            result += "<li item-checked=\"true\"><i class=\"icon-file\" id=\"%s\"></i> %s</li>" % (fiO.id,fi)
+            print "<li name=\"%s\" item-checked=\"true\"><i class=\"icon-file\"></i> %s</li>" % (fiO.id,fi)
+          else:
+            result += "<li><i class=\"icon-file\" id=\"%s\"></i> %s</li>" % (fiO.id,fi)
+      result += "</ul>\n"
+      return result
+        
+class FileInterface: 
+  def __init__(self, task):
+    self.task = task
+    self.site = task.site
+    self.files= File.objects.filter(site=self.site)
+    self.selected = task.input_files.all()
+    self.root = Structure()
+    for fi in self.files:
+      self.root.process.append((fi, fi.filename))
+    self.root.build()
+  def getInterface(self):
+    return self.root.getListInterface(self.selected)
+    
+class TaskNode:
+    def __init__(self, id, x, y, task, active=False):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.task = task
+        self.assigned = True
+        files = self.task.input_files.all()
+        self.files = "%d input file%s" % (len(files), ("s", "")[len(files) == 1] )
+        if active:
+            self.div_class = "active_node"
+        elif task.job_status == STATUS_LOOKUP["FAILED"] or \
+            task.assignee == None:
+            self.assigned = False
+            self.div_class = "failed"
+        elif task.job_status == STATUS_LOOKUP["NOTDONE"]:
+            self.div_class = "notdone"
+        elif task.job_status == STATUS_LOOKUP["TRANSFERING"] or \
+            task.job_status == STATUS_LOOKUP["TRANSFER_BACK"]:
+            self.div_class = "auto"
+        elif task.job_status == STATUS_LOOKUP["INPROGRESS"] or \
+            task.job_status == STATUS_LOOKUP["VALIDATE"]:
+            self.div_class = "busy"
+        elif task.job_status == STATUS_LOOKUP["DONE"]:
+            self.div_class = "done"
+
+    
+def add_nodes(data, site, active=None):
+    import networkx as nx
+    G = nx.DiGraph()
+    for task in tasks:
+        G.add_node(task.id, size=200)
+    for task in tasks:
+        for succ in task.successors.all():
+            G.add_edge("task%d" % task.id, "task%d" % succ.id)
+    edges = json.dumps(G.edges())
+    layout = nx.spring_layout(G)
+    nodes = [ TaskNode(task.id, layout[task.id][0]*600 + 10, (layout[task.id][1])*250 +10, task)
+            for task in tasks ]
+
+    x,y = 650,0
+    for node in layout.values():
+        x, y = max(x, int(node[0]*600)+50), max(y, int(node[1]*250)+50)
+    x += 70
+    y += 70
+    
 
 def timesince(dt, end=None, default="instantly"):
     """
@@ -86,6 +176,7 @@ def index(request):
 
 def login(request):
     return render_to_response('login.html', {} )
+    
 
 @login_required(login_url="/login")
 def task(request, site, task_id):
@@ -171,12 +262,32 @@ def upload(request):
 def edit_task(request, site, task_id):
     sites = Site.objects.filter(active=True)
     task = Task.objects.get(id=task_id)
-    print task.site
+    #print task.site
     if request.method =="GET":
         form = TaskForm(instance=task)
-        return render_to_response('edit.html', {'form':form, 'task': task, 'sites': sites },
+        interface = FileInterface(task)
+        file_interface = interface.getInterface()
+        data = {'form':form, 'task': task, 'sites': sites, "file_interface": file_interface }
+        #Visaulisation
+        tasks = Task.objects.filter(site=task.site)
+        import networkx as nx
+        G = nx.DiGraph()
+        for task in tasks:
+          G.add_node(task.id, size=200)
+        for task in tasks:
+            for succ in task.successors.all():
+                G.add_edge("task%d" % task.id, "task%d" % succ.id)
+        edges = json.dumps(G.edges())
+        layout = nx.spring_layout(G)
+        nodes = [ TaskNode(task1.id, layout[task1.id][0]*600 + 10, (layout[task1.id][1])*250 +10, task1,task==task1)
+            for task1 in tasks ]
+        data["nodes"] =  nodes
+        data["edges"] = edges
+        
+        return render_to_response('edit.html', data ,
                 context_instance=RequestContext(request) )
     elif request.method == "POST":
+        print request.POST
         form = TaskForm(request.POST,instance=task )
         if form.is_valid():
             form.save()
@@ -191,29 +302,7 @@ def edit_task(request, site, task_id):
     return render_to_response('edit.html', {'form':form, 'task': task, 'sites':sites },
         context_instance=RequestContext(request) )
 
-class TaskNode:
-    def __init__(self, id, x, y, task):
-        self.id = id
-        self.x = x
-        self.y = y
-        self.task = task
-        self.assigned = True
-        files = self.task.input_files.all()
-        self.files = "%d input file%s" % (len(files), ("s", "")[len(files) == 1] )
-        if task.job_status == STATUS_LOOKUP["FAILED"] or \
-            task.assignee == None:
-            self.assigned = False
-            self.div_class = "failed"
-        elif task.job_status == STATUS_LOOKUP["NOTDONE"]:
-            self.div_class = "notdone"
-        elif task.job_status == STATUS_LOOKUP["TRANSFERING"] or \
-            task.job_status == STATUS_LOOKUP["TRANSFER_BACK"]:
-            self.div_class = "auto"
-        elif task.job_status == STATUS_LOOKUP["INPROGRESS"] or \
-            task.job_status == STATUS_LOOKUP["VALIDATE"]:
-            self.div_class = "busy"
-        elif task.job_status == STATUS_LOOKUP["DONE"]:
-            self.div_class = "done"
+
 
 
 
@@ -231,7 +320,7 @@ def view_site(request, site):
             G.add_edge("task%d" % task.id, "task%d" % succ.id)
     edges = json.dumps(G.edges())
     layout = nx.spring_layout(G)
-    print layout
+    #print layout
     nodes = [ TaskNode(task.id, layout[task.id][0]*600 + 10, (layout[task.id][1])*250 +10, task)
             for task in tasks ]
 

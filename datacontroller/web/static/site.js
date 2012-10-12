@@ -108,4 +108,5 @@ $(document).ready(function () {
     $("#cat_but").click(add_cat);
     $("#user_cancel").click(cancel_user);
     $("#server_cancel").click(cancel_user);
+
 });
