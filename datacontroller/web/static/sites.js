@@ -6,6 +6,6 @@ function add_site() {
 
 $(document).ready(function() {
     $("#add_site_button").click(add_site);
-
+    
 
 });

@@ -47,7 +47,6 @@ $(document).ready(function () {
         var checked = event.args.checked;
         $('#jqxTree').jqxTree({ hasThreeStates: checked });
     });
-    $("#jqxTree").jqxTree('selectItem', $("#home")[0]);
     $("#file-submit").click(function () {
       var items = $("#jqxTree").jqxTree('getItems');
       var data = Array();

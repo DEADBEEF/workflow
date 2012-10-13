@@ -1,3 +1,36 @@
+// using jQuery
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function submit(action, method, values) {
+    var form = $('<form/>', {
+        action: action,
+        method: method
+    });
+    $.each(values, function() {
+        form.append($('<input/>', {
+            type: 'hidden',
+            name: this.name,
+            value: this.value
+        }));    
+    });
+    form.appendTo('body').submit();
+}
+
+
 function show_user() {
     $("#server").addClass("hidden");
     $("#user").removeClass("hidden");
@@ -90,6 +123,19 @@ function cancel_user() {
     $("#user_but").removeClass("hidden");
     $("#server_but").removeClass("hidden");
 }
+function start_scan() {
+    var csrftoken = getCookie('csrftoken');
+    var url = location.pathname.split("/");
+    var site = "";
+    if (url[1] == "site"){
+      site = url[url.length - 2];
+    } else if (url[1] == "edit"){
+      site = url[url.length - 3];
+    }
+    values = [ {"name": "site", "value":site}, {"name":"csrfmiddlewaretoken", "value":csrftoken}]
+    submit("../../../../../startScan/","POST", values)
+  
+}
 
 $(document).ready(function () {
     $("#dialog").dialog({
@@ -98,6 +144,15 @@ $(document).ready(function () {
         bgiframe: true,
         width: 300,
         height:150
+    });
+    // Create jqxTree 
+    var theme = getTheme();
+    // create jqxTree
+    $('#jqxTree').jqxTree({ height: '300px', width: '500px', theme: theme });
+    $('#jqxCheckBox').jqxCheckBox({ width: '200px', height: '25px', checked: true, theme: theme });
+    $('#jqxCheckBox').bind('change', function (event) {
+        var checked = event.args.checked;
+        $('#jqxTree').jqxTree({ hasThreeStates: checked });
     });
     $("#user_but").click(show_user);
     $("#server_but").click(show_server);
@@ -108,5 +163,6 @@ $(document).ready(function () {
     $("#cat_but").click(add_cat);
     $("#user_cancel").click(cancel_user);
     $("#server_cancel").click(cancel_user);
+    $("#btn-start-scan").click(start_scan);
 
 });

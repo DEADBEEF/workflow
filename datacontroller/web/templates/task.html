@@ -4,7 +4,15 @@
 
 {% block scripts %}
 {% load staticfiles %}
-<script type="text/javascript" src="{% static "task.js" %}" ></script>
+  <link rel="stylesheet" href="{% static "jqwidgets/styles/jqx.base.css" %}" type="text/css"/>
+  <script type="text/javascript" src="{% static "scripts/gettheme.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxcore.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxbuttons.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxscrollbar.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxpanel.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxtree.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxcheckbox.js" %}"></script>
+  <script type="text/javascript" src="{% static "task.js" %}" ></script>
 {% endblock %}
 
 {% block header %}
@@ -80,10 +88,11 @@
             </form>
   {% endif %}
             Input Files:
-            <div id="files">
-            {% for file in files %}
-            <div class="file">{{file.filename}}</div>
-            {% endfor %}
+            <div id="jqxWidget">
+                <div id="jqxTree">
+                  {{ file_interface|safe }}
+                </div>
+              </div>
             </div>
         </div>
     </div>

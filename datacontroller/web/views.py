@@ -45,14 +45,24 @@ class Structure:
       return result
         
 class FileInterface: 
-  def __init__(self, task):
+  def __init__(self, task=None, specific=False,site=None):
     self.task = task
-    self.site = task.site
-    self.files= File.objects.filter(site=self.site)
-    self.selected = task.input_files.all()
+    if site == None:
+      self.site = task.site
+      self.selected = task.input_files.all()
+      self.files= File.objects.filter(site=self.site)
+    else:
+      self.site = site
+      self.files= File.objects.filter(site=self.site)
+      self.selected = self.files
+
     self.root = Structure()
-    for fi in self.files:
-      self.root.process.append((fi, fi.filename))
+    if specific:
+      for fi in self.selected:
+        self.root.process.append((fi, fi.filename))
+    else:
+      for fi in self.files:
+        self.root.process.append((fi, fi.filename))
     self.root.build()
   def getInterface(self):
     return self.root.getListInterface(self.selected)
@@ -82,6 +92,25 @@ class TaskNode:
             self.div_class = "busy"
         elif task.job_status == STATUS_LOOKUP["DONE"]:
             self.div_class = "done"
+            
+def rescan(site):
+  root = SiteDir.objects.get().root_dir
+  ofolder = "%s/%s/" % (root, site.folder_name)
+  old_files =  set(File.objects.filter(site=site))
+  try:
+      os.mkdir(ofolder)
+  except OSError as exc: # Python >2.5
+      pass
+  filelist = Directory(ofolder).getFileList()
+  for filename in filelist:
+      name = filename[0][len(ofolder)+1:]
+      file_o, created = File.objects.get_or_create(site=site, filename=name)
+      if  not created:
+        old_files.remove(file_o)
+      for file_o in old_files:
+        file_o.delete()
+  
+  
 
     
 def add_nodes(data, site, active=None):
@@ -194,6 +223,9 @@ def task(request, site, task_id):
     user = request.user
     files = task.input_files.all()
     data = {'task':task, 'files': files, 'site': site, 'sites':sites}
+    interface = FileInterface(task,True)
+    file_interface = interface.getInterface()
+    data["file_interface"] = file_interface
     if task.job_status == STATUS_LOOKUP["INPROGRESS"]:
         data["started"] = u"Started: %s ago" % timesince(task.started)
         data["progress"] = True
@@ -303,7 +335,14 @@ def edit_task(request, site, task_id):
         context_instance=RequestContext(request) )
 
 
-
+@permission_required("web.edit_task", login_url="/login/")
+def start_file_scan(request):
+    if request.method == "POST":
+      site_id = request.POST["site"]
+      site = Site.objects.get(id=site_id)
+      rescan(site)
+      return redirect('web.views.view_site', site=site.id)
+      
 
 
 @login_required(login_url="/login/")
@@ -323,6 +362,8 @@ def view_site(request, site):
     #print layout
     nodes = [ TaskNode(task.id, layout[task.id][0]*600 + 10, (layout[task.id][1])*250 +10, task)
             for task in tasks ]
+    interface = FileInterface(site=site)
+    file_interface = interface.getInterface()
 
     x,y = 650,0
     for node in layout.values():
@@ -339,7 +380,7 @@ def view_site(request, site):
         'server_form':server_form, 'site_id':site.id, 'job_form': job_form, 'jobs':jobs,
         'categories': categories, 'category_form': category_form,
         'site':site, 'sites': sites, 'width': x,  'height': y, 'nodes':nodes,
-        'edges':edges}
+        'edges':edges, 'file_interface': file_interface}
         ,context_instance=RequestContext(request) )
 
 @permission_required('web.edit_task', login_url="/login/")
