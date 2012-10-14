@@ -3,17 +3,27 @@
 
 {% block scripts %}
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static "site.css" %}" />
-<link type="text/css" href="{% static "jquery-ui.css" %}" rel="stylesheet" />
-<script type="text/javascript" src="{% static "site.js" %}" ></script>
-<script type="text/javascript" >
-    var task_edges = eval('{{edges|safe}}');
-{% if perms.web.edit_task %}
-    var privelege = true;
-{% endif %}
-</script>
-<script type="text/javascript" src="{% static "visual_site.js" %}" ></script>
+  <link rel="stylesheet" type="text/css" href="{% static "site.css" %}" />
+  <link type="text/css" href="{% static "jquery-ui.css" %}" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static "jqwidgets/styles/jqx.base.css" %}" type="text/css"/>
+  <script type="text/javascript" src="{% static "scripts/gettheme.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxcore.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxbuttons.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxscrollbar.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxpanel.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxtree.js" %}"></script>
+  <script type="text/javascript" src="{% static "jqwidgets/jqxcheckbox.js" %}"></script>
+  <link type="text/css" href="{% static "jquery-ui.css" %}" rel="stylesheet" />
+  <script type="text/javascript" src="{% static "site.js" %}" ></script>
+  <script type="text/javascript" >
+      var task_edges = eval('{{edges|safe}}');
+  {% if perms.web.edit_task %}
+      var privelege = true;
+  {% endif %}
+  </script>
+  <script type="text/javascript" src="{% static "visual_site.js" %}" ></script>
 {% endblock %}
+
 {% block header %}
 <h1 class="page-title">{{site.name}}</h1>
 {% endblock %}
@@ -33,30 +43,31 @@
  </div>
   <div class="well">
     <div id="wrapper" style="width:100%;height:{{height}}px;">
-    <div id="workflow_vis" style="width:100%;height:{{height}}px">
-        <div id="dialog" title="Confirmation Required">
-            Are you sure you want to remove this dependency?
-        </div>
-        {% for node in nodes %}
-        <div id="task{{node.id}}" class="taskNode draggable {{node.div_class}}"
-            style="left:{{node.x}}px;top:{{node.y}}px;position:absolute;" >
-            <a href="{% url web.views.task site=node.task.site.id task_id=node.id%}">
-                {{node.task.job_type.name}}</a>
-            <br/>
-            {% if node.assigned %}
-            <div class="user">{{node.task.assignee}}</div>
-            {% else %}
-            <div class="user">No user assigned</div>
-            {% endif %}
-            <div class="files">{{node.files}}</div>
-            {% if perms.web.edit_task %}
-            <a href="{% url web.views.edit_task site=node.task.site.id task_id=node.id%}"><i class="icon-edit"></i></a>
-            <div class="source"><i class="icon-share-alt"></i></div>
-            {% endif %}
-        </div>
-        {% endfor %}
+      <div id="workflow_vis" style="width:100%;height:{{height}}px">
+          <div id="dialog" title="Confirmation Required">
+              Are you sure you want to remove this dependency?
+          </div>
+          {% for node in nodes %}
+          <div id="task{{node.id}}" class="taskNode draggable {{node.div_class}}"
+              style="left:{{node.x}}px;top:{{node.y}}px;position:absolute;" >
+              <a href="{% url web.views.task site=node.task.site.id task_id=node.id%}">
+                  {{node.task.job_type.name}}</a>
+              <br/>
+              {% if node.assigned %}
+              <div class="user">{{node.task.assignee}}</div>
+              {% else %}
+              <div class="user">No user assigned</div>
+              {% endif %}
+              <div class="files">{{node.files}}</div>
+              {% if perms.web.edit_task %}
+              <a href="{% url web.views.edit_task site=node.task.site.id task_id=node.id%}"><i class="icon-edit"></i></a>
+              <div class="source"><i class="icon-share-alt"></i></div>
+              {% endif %}
+          </div>
+          {% endfor %}
+      </div>
     </div>
-    </div>
+
     {%if perms.web.edit_task %}
     <button class="btn btn-success" id="user_but" type="button">Add User Task</button>
     <button class="btn btn-success" id="server_but" type="button">Add Server Task</button>
@@ -121,9 +132,23 @@
   </table>
     </div>
   </div>
-
-<hr/>
 </div>
+<div class="row-fluid">
+  <div class="block">
+    <p class="block-heading">Site Files</p>
+    <div class="block-body">
+      <div class="btn-toolbar">
+        <button id="btn-start-scan" class="btn btn-primary">Rescan files on File System</button>
+      </div>
+      <div id="jqxWidget">
+        <div id="jqxTree">
+          {{ file_interface|safe }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="row-fluid">
  <div class="block span6">
  <p class="block-heading">Jobs</p>
