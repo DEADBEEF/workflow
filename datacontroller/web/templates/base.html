@@ -62,18 +62,11 @@
   </div>
 
   <div class="sidebar-nav">
-    <a href="#task-menu" class="nav-header" data-toggle="collapse"><i class="icon-dashboard"></i>
-    My Tasks</a>
-    <ul id="task-menu" class="nav nav-list collapse in">
-        {% for site in sites %}
-        <li {% if site.task_url_active %}class="active"{%endif%}><a href="{{site.task_url}}">{{site.name}}</a></li>
-        {% endfor %}
-    </ul>
     <a href="{% url web.views.sites %}" class="nav-header" ><i class="icon-globe"></i>
     Sites</a>
     <ul id="site-menu" class="nav nav-list in">
-        {% for site in sites %}
-        <li><a href="{% url web.views.view_site site=site.id %}">{{site.name}}</a></li>
+        {% for site1 in sites %}
+        <li {% if site == site1  %}class="active"{% endif %}><a href="{% url web.views.view_site site=site1.id %}">{{site1.name}}</a></li>
         {% endfor %}
     </ul>
   </div>

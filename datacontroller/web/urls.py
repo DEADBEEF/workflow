@@ -20,4 +20,5 @@ urlpatterns = patterns('web.views',
         url(r'^addDep/$', 'add_dependency'),
         url(r'^removeDep/$', 'remove_dependency'),
         url(r'^startScan/$', 'start_file_scan'),
+        url(r'placeNode/$', 'place_node'),
         )

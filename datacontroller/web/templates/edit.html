@@ -15,7 +15,7 @@
   <link type="text/css" href="{% static "jquery-ui.css" %}" rel="stylesheet" />
   <link type="text/css" href="{% static "edit.css" %}" rel="stylesheet" />
     <script type="text/javascript" >
-      var task_edges = eval('{{edges|safe}}');
+      var task_edges = eval("{{edges|safe}}");
   {% if perms.web.edit_task %}
       var privelege = true;
   {% endif %}

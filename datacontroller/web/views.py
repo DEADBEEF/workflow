@@ -114,23 +114,19 @@ def rescan(site):
 
     
 def add_nodes(data, site, active=None):
-    import networkx as nx
-    G = nx.DiGraph()
-    for task in tasks:
-        G.add_node(task.id, size=200)
+    #import networkx as nx
+    #G = nx.DiGraph()
+    tasks = Task.objects.filter(site=site)
+    edges = []
     for task in tasks:
         for succ in task.successors.all():
-            G.add_edge("task%d" % task.id, "task%d" % succ.id)
-    edges = json.dumps(G.edges())
-    layout = nx.spring_layout(G)
-    nodes = [ TaskNode(task.id, layout[task.id][0]*600 + 10, (layout[task.id][1])*250 +10, task)
+            edges.append(["task%d" % task.id, "task%d" % succ.id])
+    
+    #layout = nx.spring_layout(G)
+    nodes = [ TaskNode(task.id, task.x_pos , task.y_pos , task, task==active)
             for task in tasks ]
-
-    x,y = 650,0
-    for node in layout.values():
-        x, y = max(x, int(node[0]*600)+50), max(y, int(node[1]*250)+50)
-    x += 70
-    y += 70
+    data["edges"] = edges
+    data["nodes"] = nodes
     
 
 def timesince(dt, end=None, default="instantly"):
@@ -176,6 +172,7 @@ def index(request):
         for site in sites:
             if site.id == GET["site"]:
                 site.task_url_active = True
+                data["site"] = site
     else:
         tasks= tasks.filter(site__active=True)
     site_param = GET.copy()
@@ -226,19 +223,26 @@ def task(request, site, task_id):
     interface = FileInterface(task,True)
     file_interface = interface.getInterface()
     data["file_interface"] = file_interface
+    print task.job_status
     if task.job_status == STATUS_LOOKUP["INPROGRESS"]:
         data["started"] = u"Started: %s ago" % timesince(task.started)
-        data["progress"] = True
+        if task.job_type.type == TYPE_LOOKUP["USER"]:
+            data["progress"] = True
     elif task.job_status == STATUS_LOOKUP["DONE"] or \
         task.job_status == STATUS_LOOKUP["VALIDATE"]:
         data["started"] = u"The task was completed in:  %s" % timesince(task.started, task.ended)
     if task.job_type.type != TYPE_LOOKUP["USER"]:
         data["server_task"] = True
+        if task.job_status == STATUS_LOOKUP["FAILED"]:
+            data["failed_button"] = True
     elif task.job_status == STATUS_LOOKUP["VALIDATE"] and user.has_perm('web.edit_task'):
         data["validate_button"] = True
+    elif task.job_status == STATUS_LOOKUP["FAILED"]:
+        data["failed_button"] = True
     if user.has_perm('web.can_edit'):
         data["edit"] = True
-    print STATUS_DESC_LOOKUP
+    #print STATUS_DESC_LOOKUP
+    data["site"] = task.site
     task.status_display = STATUS_DESC_LOOKUP[task.job_status]
     if user != task.assignee or user.has_perm('web.edit_task'):
         return render_to_response('task.html', data, context_instance=RequestContext(request))
@@ -261,6 +265,10 @@ def finish_task(request):
             if user.has_perm('web.can_edit'):
                 finish_process_task(task)
             pass
+        elif request.POST.get("retry_task", "") != "":
+            task_id = request.POST["retry_task"]
+            task = Task.objects.get(id=task_id)
+            run_process_task(task)
         return redirect('web.views.task', site=task.site.id, task_id=task.id)
 
 @login_required(login_url="/login")
@@ -299,23 +307,8 @@ def edit_task(request, site, task_id):
         form = TaskForm(instance=task)
         interface = FileInterface(task)
         file_interface = interface.getInterface()
-        data = {'form':form, 'task': task, 'sites': sites, "file_interface": file_interface }
-        #Visaulisation
-        tasks = Task.objects.filter(site=task.site)
-        import networkx as nx
-        G = nx.DiGraph()
-        for task in tasks:
-          G.add_node(task.id, size=200)
-        for task in tasks:
-            for succ in task.successors.all():
-                G.add_edge("task%d" % task.id, "task%d" % succ.id)
-        edges = json.dumps(G.edges())
-        layout = nx.spring_layout(G)
-        nodes = [ TaskNode(task1.id, layout[task1.id][0]*600 + 10, (layout[task1.id][1])*250 +10, task1,task==task1)
-            for task1 in tasks ]
-        data["nodes"] =  nodes
-        data["edges"] = edges
-        
+        data = {'form':form, 'task': task, 'sites': sites, "file_interface": file_interface, "site":task.site }
+        add_nodes(data, task.site, task)   
         return render_to_response('edit.html', data ,
                 context_instance=RequestContext(request) )
     elif request.method == "POST":
@@ -342,59 +335,80 @@ def start_file_scan(request):
       site = Site.objects.get(id=site_id)
       rescan(site)
       return redirect('web.views.view_site', site=site.id)
-      
 
+@login_required(login_url="/login/") 
+def place_node(request):
+    if request.method == "POST":
+      task_id = int(request.POST["task"][4:])
+      print task_id
+      x = int(float(request.POST["x_pos"]))
+      y = int(float(request.POST["y_pos"]))
+      task = Task.objects.get(id=task_id)
+      task.x_pos = x
+      task.y_pos = y
+      task.save()
+      return HttpResponse('good')
 
 @login_required(login_url="/login/")
 def view_site(request, site):
     sites = Site.objects.filter(active=True)
     site = Site.objects.get(id=site)
-    tasks = Task.objects.filter(site=site) #Active sites
-    import networkx as nx
-    G = nx.DiGraph()
-    for task in tasks:
-        G.add_node(task.id, size=200)
-    for task in tasks:
-        for succ in task.successors.all():
-            G.add_edge("task%d" % task.id, "task%d" % succ.id)
-    edges = json.dumps(G.edges())
-    layout = nx.spring_layout(G)
-    #print layout
-    nodes = [ TaskNode(task.id, layout[task.id][0]*600 + 10, (layout[task.id][1])*250 +10, task)
-            for task in tasks ]
+    tasks = Task.objects.filter(site=site)
+    
     interface = FileInterface(site=site)
     file_interface = interface.getInterface()
 
-    x,y = 650,0
-    for node in layout.values():
-        x, y = max(x, int(node[0]*600)+50), max(y, int(node[1]*250)+50)
-    x += 70
-    y += 70
     categories = Category.objects.all()
     user_form = AddUserTaskForm()
     server_form = AddServerTaskForm()
     job_form = JobForm()
     category_form = CategoryForm()
     jobs = Job.objects.all()
-    return render_to_response('site.html', {'tasks':tasks, 'user_form': user_form,
+    data = {'tasks':tasks, 'user_form': user_form,
         'server_form':server_form, 'site_id':site.id, 'job_form': job_form, 'jobs':jobs,
         'categories': categories, 'category_form': category_form,
-        'site':site, 'sites': sites, 'width': x,  'height': y, 'nodes':nodes,
-        'edges':edges, 'file_interface': file_interface}
+        'site':site, 'sites': sites, 'file_interface': file_interface}
+    add_nodes(data, site )   
+    return render_to_response('site.html', data 
         ,context_instance=RequestContext(request) )
 
+def detectCycles(nodes, edges, start, current):
+    if nodes[current] and current == start:
+      return False
+    if nodes[current]:
+      return True
+    nodes[current] = True
+    for id in edges[current]:
+        if not detectCycles(nodes, edges,start, id):
+          return False
+    return True
+          
+        
 @permission_required('web.edit_task', login_url="/login/")
 def add_dependency(request):
     if request.method == "POST":
         site_id= request.POST["site"]
         sourceId = int(request.POST["sourceId"][4:])
         targetId = int(request.POST["targetId"][4:])
+        
         site = Site.objects.get(id=site_id)
-        source = Task.objects.get(site=site,id=sourceId)
-        target = Task.objects.get(site=site,id=targetId)
-        source.successors.add(target)
-        target.predecessors.add(source)
-    return HttpResponse("good")
+        
+        visited = {}
+        edges = {}
+        for task in Task.objects.filter(site=site):
+            visited[task.id] = False
+            edges[task.id] = []
+            for task2 in task.successors.all():
+                edges[task.id].append(task2.id)
+        edges[sourceId].append(targetId)
+        if detectCycles(visited, edges, sourceId, sourceId):
+          source = Task.objects.get(site=site,id=sourceId)
+          target = Task.objects.get(site=site,id=targetId)
+          source.successors.add(target)
+          target.predecessors.add(source)
+          return HttpResponse("good")
+    return HttpResponse("bad")
+       
 
 
 @permission_required('web.edit_task', login_url="/login/")

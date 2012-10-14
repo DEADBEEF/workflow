@@ -74,6 +74,8 @@ class Task(models.Model):
     predecessors = models.ManyToManyField("self", blank=True, symmetrical=False, related_name="pred+")
     successors = models.ManyToManyField("self", blank=True, symmetrical=False, related_name="succ+")
     job_status = models.CharField(max_length=1, choices=JOB_STATUS, default=STATUS_LOOKUP["NOTDONE"])
+    x_pos = models.IntegerField(default=100)
+    y_pos = models.IntegerField(default=100)
     class Meta:
         permissions = (
             ("edit_task", "Can Edit the tasks"),
