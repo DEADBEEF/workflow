@@ -35,12 +35,26 @@ function connections(params) {
                   site = url[url.length - 3];
                 }
     //alert(csrftoken);
-    $.post("../../../addDep/", {  csrfmiddlewaretoken: csrftoken,
+    var addEdge = true;
+    $.ajax({
+              url :"../../../addDep/",
+              type: "post",
+              async: false,
+              data:  {  csrfmiddlewaretoken: csrftoken,
                          sourceId:params["sourceId"],
                          targetId:params["targetId"],
                          site:site},
-                            function(data) {});
-    return true;
+              success: function(data) {
+                              if (data == "good") {
+                                 addEdge = true;
+                              } else {
+                                  alert("Edge cannot be added, cycle detected");
+                                  addEdge = false;
+                              }
+                            }
+              });
+                       
+    return addEdge  ;
 }
 
 function deleteConnection(connection) {
@@ -77,10 +91,20 @@ function deleteConnection(connection) {
     $("#dialog").dialog("open");
 
 }
+function drop_alert() {
+    var id = this.id;
+    var position = $(this).position();
+    var csrftoken = getCookie("csrftoken")
+    $.post("../../../placeNode/", {  csrfmiddlewaretoken: csrftoken,
+        task:id,
+        x_pos:position.left,
+        y_pos:position.top},
+          function(data) { });
+}
 
 jsPlumb.bind("ready", function() {
     jsPlumb.Defaults.Containter = $("#workflow_vis");
-    jsPlumb.draggable($(".draggable"), {containment:'#workflow_vis'});
+    jsPlumb.draggable($(".draggable"), {containment:'#workflow_vis', stop:drop_alert});
     jsPlumb.importDefaults({
         anchor: "Continuous",
         connector: ["StateMachine", {curviness:20}],

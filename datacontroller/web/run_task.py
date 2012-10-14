@@ -70,7 +70,17 @@ class AsyncTask11(Thread):
             fname = "%s/%s/%s" % (self.root, task.site.folder_name, f.filename)
             callscript = [script, fname, ofolder]
             os.write(write, ("[ Caling file - %s: %s ]\n" % (f.filename, " ".join(callscript))) )
-            a = call(callscript, stdout=write, stderr=write)
+            try:
+                a = call(callscript, stdout=write, stderr=write)
+            except:
+                os.write(write, ("[ FAILED No Script: The script was not found ]\n\n") )
+                task.job_status = STATUS_LOOKUP["FAILED"]
+                os.close(write)
+                fi = os.fdopen(read, "r")
+                log =  fi.read()
+                task.log += log
+                task.save()
+                return
             if a != 0:
                 os.write(write, ("[ FAILED ERROR: %d ]\n\n" % a) )
                 passed = False
@@ -111,8 +121,18 @@ class AsyncTask1M(Thread):
             "%s/%s/%s" % (self.root, task.site.folder_name, x.filename), files)
         read, write = os.pipe()
         os.write(write, datetime.now().strftime("[%Y-%m-%d %H:%M:%s Starting Task]\n"))
-        os.write(write, ("[ %s ]\n" %  " ".join(callscript)) )
-        result = call(callscript, stdout=write, stderr=write)
+        os.write(write, ("[ %s ]\n" %  " ".join(callscript)))
+        try:
+            result = call(callscript, stdout=write, stderr=write)
+        except:
+            os.write(write, ("[ FAILED No Script: The script was not found ]\n\n") )
+            task.job_status = STATUS_LOOKUP["FAILED"]
+            os.close(write)
+            fi = os.fdopen(read, "r")
+            log =  fi.read()
+            task.log += log
+            task.save()
+            return
         if result != 0:
             os.write(write, ("[ FAILED ERROR: %d ]\n\n" % result) )
         else:

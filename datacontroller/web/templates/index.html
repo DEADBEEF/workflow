@@ -14,7 +14,15 @@
 {% endblock %}
 
 {% block breadcrumb %}
-    <li class="active">Home</li>
+  
+    
+{% if site %}
+    <li><a href="{% url web.views.index %}">Home</a><span class="divider">/</span></li>
+    <li class="active">{{site.name}}<span class="divider">:</span></li>
+    <li>(<a href="{% url web.views.view_site site=site.id%}">All Tasks</a><span class="divider">|</span><span class="active">My Tasks</span>)</li>
+{% else %}
+  <li class="active">Home</li>
+{% endif %}
 {% endblock %}
 
 {% block content %}
