@@ -49,7 +49,7 @@
             <p class="block-heading">Task Status</p>
             <div class="block-body">
                 <p>{{task.status_display}} {{started}}</p>
-                {% if progress %}
+  {% if progress %}
                 <p>Once you have completed the the task
                 click the button below.</p>
                 <form action="{% url web.views.finish_task%}" method="post" >
@@ -57,12 +57,19 @@
                     <input type="hidden" name="task_id" value="{{ task.id }}">
                     <button class="btn btn-success" id="finish" type="submit">Finish Task</button>
                 </form>
-                {% elif validate_button %}
+  {% elif validate_button %}
                 <form action="{% url web.views.finish_task%}" method="post" >
                     {% csrf_token %}
                     <p>Once you have validated the task click the button below</p>
                     <input type="hidden" name="validate_task" value="{{ task.id }}">
                     <button class="btn btn-success"  id="finish" type="submit">Validate Task</button>
+                </form>
+  {% elif failed_button %}
+                  <form action="{% url web.views.finish_task%}" method="post" >
+                    {% csrf_token %}
+                    <p>Once the problem has been fixed restart the task below</p>
+                    <input type="hidden" name="retry_task" value="{{ task.id }}">
+                    <button class="btn btn-danger"  id="finish" type="submit">Retry Task</button>
                 </form>
   {% endif %}
             </div>

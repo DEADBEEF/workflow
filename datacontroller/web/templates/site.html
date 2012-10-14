@@ -16,7 +16,7 @@
   <link type="text/css" href="{% static "jquery-ui.css" %}" rel="stylesheet" />
   <script type="text/javascript" src="{% static "site.js" %}" ></script>
   <script type="text/javascript" >
-      var task_edges = eval('{{edges|safe}}');
+      var task_edges = eval("{{edges|safe}}");
   {% if perms.web.edit_task %}
       var privelege = true;
   {% endif %}
@@ -30,7 +30,8 @@
 
 {% block breadcrumb %}
 <li><a href="{% url web.views.index %}">Home</a><span class="divider">/</span></li>
-<li class="active">{{site.name}}</li>
+<li class="active">{{site.name}}<span class="divider">:</span></li>
+<li>(<span class="active">All Tasks</span><span class="divider">|</span><a href="{% url web.views.index%}?site={{site.id}}">My Tasks</a>)</li>
 {% endblock %}
 
 {% block content %}
@@ -42,8 +43,8 @@
      <button class="btn btn-success" id="run_tasks" type="submit">Run Tasks</button>
  </div>
   <div class="well">
-    <div id="wrapper" style="width:100%;height:{{height}}px;">
-      <div id="workflow_vis" style="width:100%;height:{{height}}px">
+    <div id="wrapper" style="width:100%;height:350px;">
+      <div id="workflow_vis" style="width:100%;height:350px">
           <div id="dialog" title="Confirmation Required">
               Are you sure you want to remove this dependency?
           </div>
@@ -137,9 +138,11 @@
   <div class="block">
     <p class="block-heading">Site Files</p>
     <div class="block-body">
+{%if perms.web.edit_task %}
       <div class="btn-toolbar">
         <button id="btn-start-scan" class="btn btn-primary">Rescan files on File System</button>
       </div>
+{%endif%}   
       <div id="jqxWidget">
         <div id="jqxTree">
           {{ file_interface|safe }}
