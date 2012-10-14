@@ -28,10 +28,14 @@ function connections(params) {
     }
     var csrftoken = getCookie('csrftoken');
     var url = location.pathname.split("/");
-    var site = url[url.length - 2];
-
+    var site = "";
+                if (url[1] == "site"){
+                  site = url[url.length - 2];
+                } else if (url[1] == "edit"){
+                  site = url[url.length - 3];
+                }
     //alert(csrftoken);
-    $.post("../../addDep/", {  csrfmiddlewaretoken: csrftoken,
+    $.post("../../../addDep/", {  csrfmiddlewaretoken: csrftoken,
                          sourceId:params["sourceId"],
                          targetId:params["targetId"],
                          site:site},
@@ -50,9 +54,14 @@ function deleteConnection(connection) {
                 $(this).dialog("close");
                 var csrftoken = getCookie('csrftoken');
                 var url = location.pathname.split("/");
-                var site = url[url.length - 2];
+                var site = "";
+                if (url[1] == "site"){
+                  site = url[url.length - 2];
+                } else if (url[1] == "edit"){
+                  site = url[url.length - 3];
+                }
 
-                $.post("../../removeDep/", {  csrfmiddlewaretoken: csrftoken,
+                $.post("../../../removeDep/", {  csrfmiddlewaretoken: csrftoken,
                          sourceId:connection["sourceId"],
                          targetId:connection["targetId"],
                          site:site},

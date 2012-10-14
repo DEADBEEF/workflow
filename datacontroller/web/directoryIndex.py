@@ -14,7 +14,15 @@ class Directory:
             elif child[0] != ".":
                 self.pyFiles.append(PyFile(path,self))
 
-
+    def getListInterface(self):
+        result = "<ul>\n"
+        for direc in self.dirs:
+            result += "<li>%s\n%s</li>\n" % (direc, direc.getListInterface()) 
+        for fi in self.pyFiles:
+            result += "<li>%s</li>" % (fi.name)
+        
+        result += "</ul>\n"
+        return result
     def hasDirs(self):
         return len(self.dirs) != 0
 
