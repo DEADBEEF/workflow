@@ -321,7 +321,7 @@ def edit_task(request, site, task_id):
         return render_to_response('edit.html', data ,
                 context_instance=RequestContext(request) )
     elif request.method == "POST":
-        print request.POST
+        #print request.POST
         form = TaskForm(request.POST,instance=task )
         if form.is_valid():
             form.save()
@@ -333,8 +333,20 @@ def edit_task(request, site, task_id):
                 pred.successors.add(task)
                 pred.save()
             return redirect('web.views.view_site', site=site)
-    return render_to_response('edit.html', {'form':form, 'task': task, 'sites':sites },
+    interface = FileInterface(task)
+    file_interface = interface.getInterface()
+    data = {'form':form, 'task': task, 'sites': sites, "file_interface": file_interface, "site":task.site }
+    add_nodes(data, task.site, task)   
+    return render_to_response('edit.html',data,
         context_instance=RequestContext(request) )
+        
+@permission_required('web.edit_task', login_url="/login/")
+def delete_task(request):
+    if request.method =="POST":
+        task = Task.objects.get(id=request.POST["task_id"])
+        site = task.site
+        task.delete()
+        return redirect('web.views.view_site', site=site.id)
 
 
 @permission_required("web.edit_task", login_url="/login/")
