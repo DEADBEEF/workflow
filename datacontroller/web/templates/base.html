@@ -46,6 +46,7 @@
   <div class="navbar">
     <div class="navbar-inner">
         <ul class="nav pull-right">
+	   {% if user.is_authenticated %}
            <li id="fat-menu" class="dropdown">
                         <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
                             <i class="icon-user"></i> {{user.username }}
@@ -53,14 +54,15 @@
                         </a>
 
                         <ul class="dropdown-menu">
-                            <li><a tabindex="-1" href="sign-in.html">Logout</a></li>
+                            <li><a tabindex="-1" href="/logout/">Logout</a></li>
                         </ul>
                     </li>
+           {% endif %}
         </ul>
         <a class="brand" href="{% url web.views.index%}"><span class="first">Zamani</span><span class="second">Workflow</span></a>
     </div>
   </div>
-
+{% if user.is_authenticated %}
   <div class="sidebar-nav">
     <a href="{% url web.views.sites %}" class="nav-header" ><i class="icon-globe"></i>
     Sites</a>
@@ -70,7 +72,7 @@
         {% endfor %}
     </ul>
   </div>
-
+{% endif %}	
 
   <div class="content">
     <div class="header">

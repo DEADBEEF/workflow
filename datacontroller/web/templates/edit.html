@@ -68,7 +68,7 @@
               {% endif %}
               <div class="files">{{node.files}}</div>
               {% if perms.web.edit_task %}
-              <a href="{% url web.views.edit_task site=node.task.site.id task_id=node.id%}"><i class="icon-edit"></i></a>
+              <div class="edit_switch"><a href="{% url web.views.edit_task site=node.task.site.id task_id=node.id%}"><i class="icon-edit"></i></a></div>
               <div class="source"><i class="icon-share-alt"></i></div>
               {% endif %}
           </div>

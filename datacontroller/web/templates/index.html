@@ -6,7 +6,9 @@
 
 {% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static "index.css" %}"/>
+<script type="text/javascript" src="{% static "jquery.tablesorter.min.js" %}"></script>
 <script type="text/javascript" src="{% static "index.js" %}"></script>
+
 {% endblock %}
 
 {% block header %}
@@ -30,7 +32,8 @@
     <div class="block">
         <p class="block-heading">Outstanding tasks</p>
         <div class="block-body">
-         <table class="table">
+	  {% if outstanding %}
+         <table class="table tablesorter">
             <thead>
               <tr>
                <th>Name of task</th>
@@ -50,14 +53,18 @@
              {% endfor %}
             </tbody>
          </table>
+        {% else %}
+            No Outstanding Tasks
+        {% endif %}
         </div>
     </div>
 </div>
 <div class="row-fluid">
     <div class="block span6">
-        <a href="#validationwidget" class="block-heading" data-toggle="collapse">Awaiting Validation</a>
+        <a href="#validationwidget" class="block-heading" data-toggle="collapse">Completed Tasks Awaiting Validation</a>
         <div id="validationwidget" class="block-body collapse in">
-            <table class="table">
+	    {% if validation_req %}
+            <table class="table tablesorter">
                 {%if perms.web.can_edit %}
             <thead>
               <tr>
@@ -99,12 +106,16 @@
             </tbody>
             {%endif%}
          </table>
+        {% else %}
+            <p><br/>No Tasks Awaiting Validation<br/></p>
+        {% endif %}
         </div>
     </div>
     <div class="block span6">
-        <a href="#futurewidget" class="block-heading" data-toggle="collapse">Future Tasks</a>
+        <a href="#futurewidget" class="block-heading" data-toggle="collapse">Tasks with unmet dependencies</a>
         <div id="futurewidget" class="block-body collapse in">
-         <table class="table">
+         {% if future %}
+         <table class="table tablesorter">
             <thead>
               <tr>
                <th>Name of task</th>
@@ -124,6 +135,9 @@
              {% endfor %}
             </tbody>
          </table>
+         {% else %}
+            <p><br/>No tasks with unmet dependencies<br/></p>
+         {% endif %}
         </div>
     </div>
 </div>
@@ -131,7 +145,7 @@
     <div class="block">
         <a href="#teamoverview" class="block-heading" datatoggle="collapse">Team Task overview</a>
         <div id="teamoverview" class="block-body collapse in">
-            <table class="table">
+            <table class="table tablesorter">
             <thead>
              <tr>
                <th class="tl">Name</th>
@@ -163,7 +177,7 @@
     <div class="block span6">
         <a href="#completedwidget" class="block-heading" data-toggle="collapse">Completed Tasks</a>
         <div id="completedwidget" class="block-body collapse">
-         <table class="table">
+         <table class="table tablesorter">
             <thead>
               <tr>
                <th>Name of task</th>

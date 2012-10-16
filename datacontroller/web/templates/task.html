@@ -57,6 +57,7 @@
                     <input type="hidden" name="task_id" value="{{ task.id }}">
                     <button class="btn btn-success" id="finish" type="submit">Finish Task</button>
                 </form>
+      
   {% elif validate_button %}
                 <form action="{% url web.views.finish_task%}" method="post" >
                     {% csrf_token %}

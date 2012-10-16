@@ -80,7 +80,8 @@ class TaskNode:
             self.div_class = "active_node"
         elif task.job_status == STATUS_LOOKUP["FAILED"] or \
             task.assignee == None:
-            self.assigned = False
+            if task.assignee == None:
+              self.assigned = False
             self.div_class = "failed"
         elif task.job_status == STATUS_LOOKUP["NOTDONE"]:
             self.div_class = "notdone"
@@ -95,20 +96,28 @@ class TaskNode:
             
 def rescan(site):
   root = SiteDir.objects.get().root_dir
-  ofolder = "%s/%s/" % (root, site.folder_name)
-  old_files =  set(File.objects.filter(site=site))
+  ofolder = "%s/%s/" % (root, site.folder_name) 
+  while ofolder.find("//") != -1:
+     ofolder = ofolder.replace("//","/")
+     print ofolder
+  old_files =  set( fi.filename for fi in File.objects.filter(site=site) )
   try:
       os.mkdir(ofolder)
   except OSError as exc: # Python >2.5
       pass
   filelist = Directory(ofolder).getFileList()
   for filename in filelist:
-      name = filename[0][len(ofolder)+1:]
+      print filename[0]
+      name = filename[0][len(ofolder):]
+      print name
       file_o, created = File.objects.get_or_create(site=site, filename=name)
-      if  not created:
-        old_files.remove(file_o)
-      for file_o in old_files:
-        file_o.delete()
+      if not created:
+        old_files.remove(file_o.filename)
+      print old_files
+  for file_o in old_files:
+    file_lol = File.objects.get(site=site,filename=file_o)
+    print file_o
+    File.delete(file_lol)
   
   
 
@@ -207,12 +216,12 @@ def login(request):
 @login_required(login_url="/login")
 def task(request, site, task_id):
     JOB_STATUS = ((u'1', u'Either the dependencies of the task have not been met or the site has not been run yet.'),
-              (u'2', u'TRANSFERING'),
-              (u'3', u'INPROGRESS'),
-              (u'4', u'TRANSFER_BACK'),
+              (u'2', u'The system is transerring files from the server to the host machine.'),
+              (u'3', u'The task has been started and is awaiting completion'),
+              (u'4', u'The system is transerring files from the host machine to the server.'),
               (u'5', u'Task has been completed and is awaiting validation.'),
-              (u'6', u'DONE'),
-              (u'7', u'FAILED'))
+              (u'6', u'The task has been successfully completed.'),
+              (u'7', u'The task has failed. Please check the log to determine the source of failure.'))
     STATUS_DESC_LOOKUP = {}
     for k,v in JOB_STATUS: STATUS_DESC_LOOKUP[k] = v
     sites = Site.objects.filter(active=True)
@@ -226,7 +235,7 @@ def task(request, site, task_id):
     print task.job_status
     if task.job_status == STATUS_LOOKUP["INPROGRESS"]:
         data["started"] = u"Started: %s ago" % timesince(task.started)
-        if task.job_type.type == TYPE_LOOKUP["USER"]:
+        if task.job_type.type == TYPE_LOOKUP["USER"] and user == task.assignee:
             data["progress"] = True
     elif task.job_status == STATUS_LOOKUP["DONE"] or \
         task.job_status == STATUS_LOOKUP["VALIDATE"]:
@@ -244,7 +253,7 @@ def task(request, site, task_id):
     #print STATUS_DESC_LOOKUP
     data["site"] = task.site
     task.status_display = STATUS_DESC_LOOKUP[task.job_status]
-    if user != task.assignee or user.has_perm('web.edit_task'):
+    if user == task.assignee or user.has_perm('web.edit_task'):
         return render_to_response('task.html', data, context_instance=RequestContext(request))
     else:
         return HttpResponse("Not your task")

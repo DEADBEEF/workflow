@@ -44,6 +44,13 @@
     width:10px;
     height: 10px;
 }
+.edit_switch {
+    position: absolute;
+    left: 97px;
+    top: 15px;
+    width:10px;
+    height: 10px;
+}
 #workflow_vis {
     position: relative;
     border-style: solid;
@@ -55,7 +62,7 @@
 .taskNode {
     padding: 5px;
     width: 110px;
-    height : 70px;
+    height : 80px;
     font-size: 12px;
     border-style:solid;
     border-width:1px;
