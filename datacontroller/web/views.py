@@ -450,8 +450,11 @@ def remove_dependency(request):
 def add_task(request):
     if request.method == 'POST':
         type = request.POST["job_type"]
-        job_type = Job.objects.get(id=type)
         site = Site.objects.get(id=request.POST["site_id"])
+        try:
+            job_type = Job.objects.get(id=type)
+        except:
+            return redirect('web.views.view_site', site=site.id)
         task = Task.objects.create(job_type=job_type, site=site)
         if job_type.type != TYPE_LOOKUP["USER"]:
             print User.objects.get(username='server')
