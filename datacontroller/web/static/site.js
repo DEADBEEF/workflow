@@ -145,6 +145,13 @@ $(document).ready(function () {
         width: 300,
         height:150
     });
+    $("#dialog2").dialog({
+        autoOpen: false,
+        modal:true,
+        bgiframe: true,
+        width: 300,
+        height:150
+    });
     // Create jqxTree 
     var theme = getTheme();
     // create jqxTree
